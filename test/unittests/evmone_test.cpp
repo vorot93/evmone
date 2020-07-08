@@ -35,7 +35,7 @@ TEST(evmone, set_option_optimization_level)
 {
     auto vm = evmc::VM{evmc_create_evmone()};
     EXPECT_EQ(vm.set_option("O", ""), EVMC_SET_OPTION_INVALID_VALUE);
-    EXPECT_EQ(vm.set_option("O", "0"), EVMC_SET_OPTION_INVALID_VALUE);
+    EXPECT_EQ(vm.set_option("O", "0"), EVMC_SET_OPTION_SUCCESS);
     EXPECT_EQ(vm.set_option("O", "1"), EVMC_SET_OPTION_INVALID_VALUE);
     EXPECT_EQ(vm.set_option("O", "2"), EVMC_SET_OPTION_SUCCESS);
     EXPECT_EQ(vm.set_option("O", "3"), EVMC_SET_OPTION_INVALID_VALUE);
@@ -43,4 +43,14 @@ TEST(evmone, set_option_optimization_level)
     EXPECT_EQ(vm.set_option("O", "20"), EVMC_SET_OPTION_INVALID_VALUE);
     EXPECT_EQ(vm.set_option("O", "21"), EVMC_SET_OPTION_INVALID_VALUE);
     EXPECT_EQ(vm.set_option("O", "22"), EVMC_SET_OPTION_INVALID_VALUE);
+}
+
+TEST(evmone, baseline_execute)
+{
+    // Check if the baseline execute stub is invoked. This is temporary test.
+
+    auto vm = evmc::VM{evmc_create_evmone()};
+    vm.set_option("O", "0");
+    const auto result = vm.execute(EVMC_FRONTIER, {}, nullptr, 0);
+    EXPECT_EQ(result.status_code, EVMC_INTERNAL_ERROR);
 }
