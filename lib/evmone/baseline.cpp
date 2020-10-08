@@ -33,6 +33,7 @@ JumpdestMap build_jumpdest_map(const uint8_t* code, size_t code_size)
             m[i] = true;
         else if (op >= OP_PUSH1 && op <= OP_PUSH32)
             i += static_cast<size_t>(op - OP_PUSH1 + 1);
+        // TODO: Shrink code by ignoring last trimmed PUSH instruction.
     }
     return m;
 }
