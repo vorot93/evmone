@@ -291,20 +291,15 @@ constexpr auto stack_traits = get_stack_traits();
 struct BaselineTraits
 {
     int16_t gas_cost;
-    int8_t stack_check;
+    StackTraits stack;
 };
 
 template <evmc_revision Revision>
 constexpr std::array<BaselineTraits, 256> get_baseline_table() noexcept
 {
     std::array<BaselineTraits, 256> table{};
-
     for (size_t i = 0; i < table.size(); ++i)
-    {
-        const auto st = stack_traits[i];
-        const auto stack_check = static_cast<int8_t>(st.change <= 0 ? -st.required : st.change);
-        table[i] = {gas_costs[Revision][i], stack_check};
-    }
+        table[i] = {gas_costs[Revision][i], stack_traits[i]};
     return table;
 }
 
