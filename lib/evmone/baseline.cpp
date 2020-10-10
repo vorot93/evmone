@@ -64,55 +64,6 @@ const uint8_t* load_push(
     return code + Len - 1;
 }
 
-inline evmc_status_code op_sstore(ExecutionState& state) noexcept
-{
-    if (state.msg.flags & EVMC_STATIC)
-        return EVMC_STATIC_MODE_VIOLATION;
-
-    if (state.rev >= EVMC_ISTANBUL)
-    {
-        if (state.gas_left <= 2300)
-            return EVMC_OUT_OF_GAS;
-    }
-
-    const auto key = intx::be::store<evmc::bytes32>(state.stack.pop());
-    const auto value = intx::be::store<evmc::bytes32>(state.stack.pop());
-    auto status = state.host.set_storage(state.msg.destination, key, value);
-    int cost = 0;
-    switch (status)
-    {
-    case EVMC_STORAGE_UNCHANGED:
-        if (state.rev >= EVMC_ISTANBUL)
-            cost = 800;
-        else if (state.rev == EVMC_CONSTANTINOPLE)
-            cost = 200;
-        else
-            cost = 5000;
-        break;
-    case EVMC_STORAGE_MODIFIED:
-        cost = 5000;
-        break;
-    case EVMC_STORAGE_MODIFIED_AGAIN:
-        if (state.rev >= EVMC_ISTANBUL)
-            cost = 800;
-        else if (state.rev == EVMC_CONSTANTINOPLE)
-            cost = 200;
-        else
-            cost = 5000;
-        break;
-    case EVMC_STORAGE_ADDED:
-        cost = 20000;
-        break;
-    case EVMC_STORAGE_DELETED:
-        cost = 5000;
-        break;
-    }
-    if ((state.gas_left -= cost) < 0)
-        return EVMC_OUT_OF_GAS;
-    return EVMC_SUCCESS;
-}
-
-
 template <evmc_status_code status_code>
 inline void op_return(BaselineExecutionState& state) noexcept
 {
@@ -456,7 +407,7 @@ evmc_result baseline_execute([[maybe_unused]] evmc_vm* vm, const evmc_host_inter
             break;
         case OP_SSTORE:
         {
-            const auto status_code = op_sstore(*state);
+            const auto status_code = sstore(*state);
             if (status_code != EVMC_SUCCESS)
             {
                 state->status = status_code;
