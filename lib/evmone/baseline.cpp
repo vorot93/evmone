@@ -44,10 +44,10 @@ const uint8_t* op_jump(BaselineExecutionState& state, const JumpdestMap& jumpdes
     if (dst >= jumpdest_map.size() || !jumpdest_map[static_cast<size_t>(dst)])
     {
         state.status = EVMC_BAD_JUMP_DESTINATION;
-        return state.code.end() - 1;
+        return state.code.end();
     }
 
-    return &state.code[static_cast<size_t>(dst) - 1];
+    return &state.code[static_cast<size_t>(dst)];
 }
 
 template <size_t Len>
@@ -139,7 +139,7 @@ evmc_result baseline_execute([[maybe_unused]] evmc_vm* vm, const evmc_host_inter
     auto state = std::make_unique<BaselineExecutionState>(*msg, rev, *host, ctx, code, code_size);
 
     const auto code_end = code + code_size;
-    for (auto pc = code; pc != code_end; ++pc)
+    for (auto pc = code; pc != code_end;)
     {
         const auto op = *pc;
 
@@ -387,14 +387,19 @@ evmc_result baseline_execute([[maybe_unused]] evmc_vm* vm, const evmc_host_inter
 
         case OP_JUMP:
             pc = op_jump(*state, jumpdest_map);
-            break;
+            continue;
         case OP_JUMPI:
             if (state->stack[1] != 0)
+            {
                 pc = op_jump(*state, jumpdest_map);
+            }
             else
+            {
                 state->stack.pop();
+                ++pc;
+            }
             state->stack.pop();
-            break;
+            continue;
 
         case OP_PC:
             state->stack.push(pc - code);
@@ -744,6 +749,8 @@ evmc_result baseline_execute([[maybe_unused]] evmc_vm* vm, const evmc_host_inter
             state->status = EVMC_INTERNAL_ERROR;
             goto exit;
         }
+
+        ++pc;
     }
 
 exit:
