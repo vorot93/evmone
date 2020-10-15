@@ -54,7 +54,7 @@ EVMC_EXPORT evmc_vm* evmc_create_evmone() noexcept
         "evmone",
         PROJECT_VERSION,
         evmone::destroy,
-        evmone::execute,
+        evmone::baseline_execute,
         evmone::get_capabilities,
         evmone::set_option,
     };
