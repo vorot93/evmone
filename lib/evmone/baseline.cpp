@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "baseline.hpp"
-#include "baseline_table.hpp"
 #include "execution_state.hpp"
 #include "instructions.hpp"
+#include <evmc/instructions.h>
 #include <memory>
 
 namespace evmone
@@ -107,21 +107,22 @@ evmc_status_code op_selfdestruct(BaselineExecutionState& state) noexcept
     return EVMC_SUCCESS;
 }
 
-inline evmc_status_code check_requirements(
-    const BaselineTraits* traits, BaselineExecutionState& state, uint8_t op) noexcept
+inline evmc_status_code check_requirements(const char* const* instruction_names,
+    const evmc_instruction_metrics* instruction_metrics, BaselineExecutionState& state,
+    uint8_t op) noexcept
 {
-    const auto metrics = traits[op];
+    const auto metrics = instruction_metrics[op];
 
-    if (metrics.gas_cost < 0)
+    if (instruction_names[op] == nullptr)
         return EVMC_UNDEFINED_INSTRUCTION;
 
     if ((state.gas_left -= metrics.gas_cost) < 0)
         return EVMC_OUT_OF_GAS;
 
     const auto stack_size = state.stack.size();
-    if (stack_size < metrics.stack.required)
+    if (stack_size < metrics.stack_height_required)
         return EVMC_STACK_UNDERFLOW;
-    if (stack_size + metrics.stack.change > evm_stack::limit)
+    if (stack_size + metrics.stack_height_change > evm_stack::limit)
         return EVMC_STACK_OVERFLOW;
 
     return EVMC_SUCCESS;
@@ -132,7 +133,8 @@ evmc_result baseline_execute([[maybe_unused]] evmc_vm* vm, const evmc_host_inter
     evmc_host_context* ctx, evmc_revision rev, const evmc_message* msg, const uint8_t* code,
     size_t code_size) noexcept
 {
-    const auto& op_tbl = baseline_table[rev];
+    const auto instruction_names = evmc_get_instruction_names_table(rev);
+    const auto instruction_metrics = evmc_get_instruction_metrics_table(rev);
 
     const auto jumpdest_map = build_jumpdest_map(code, code_size);
 
@@ -143,7 +145,7 @@ evmc_result baseline_execute([[maybe_unused]] evmc_vm* vm, const evmc_host_inter
     {
         const auto op = *pc;
 
-        const auto status = check_requirements(op_tbl.data(), *state, op);
+        const auto status = check_requirements(instruction_names, instruction_metrics, *state, op);
         if (status != EVMC_SUCCESS)
         {
             state->status = status;
