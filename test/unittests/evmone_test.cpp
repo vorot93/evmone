@@ -45,7 +45,7 @@ TEST(evmone, set_option_optimization_level)
     EXPECT_EQ(vm.set_option("O", "22"), EVMC_SET_OPTION_INVALID_VALUE);
 }
 
-TEST(evmone, baseline_execute)
+TEST(evmone, DISABLED_baseline_execute)
 {
     // Check if the baseline execute stub is invoked. This is temporary test.
 
