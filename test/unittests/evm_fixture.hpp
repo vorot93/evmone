@@ -96,7 +96,7 @@ protected:
     /// The `gas_used` field  will be updated accordingly.
     void execute(bytes_view code, std::string_view input_hex = {}) noexcept
     {
-        execute(std::numeric_limits<int64_t>::max(), code, input_hex);
+        execute(std::numeric_limits<int64_t>::max() - 1, code, input_hex);
     }
 
     void execute(const bytecode& code, std::string_view input_hex = {}) noexcept

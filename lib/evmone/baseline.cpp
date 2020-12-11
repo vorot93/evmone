@@ -90,11 +90,9 @@ inline evmc_status_code check_requirements(
 {
     const auto metrics = instruction_table[op];
 
-    if (metrics.gas_cost < 0)
-        return EVMC_UNDEFINED_INSTRUCTION;
-
-    if ((state.gas_left -= metrics.gas_cost) < 0)
-        return EVMC_OUT_OF_GAS;
+    const auto gas_cost = int64_t{metrics.gas_cost} & 0x7fffffffffffffff;
+    if ((state.gas_left -= gas_cost) < 0)
+        return gas_cost == 0x7fffffffffffffff ? EVMC_UNDEFINED_INSTRUCTION : EVMC_OUT_OF_GAS;
 
     const auto stack_size = state.stack.size();
     if (stack_size < metrics.stack_height_required)
@@ -108,6 +106,8 @@ inline evmc_status_code check_requirements(
 template <bool TracingEnabled>
 evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& analysis) noexcept
 {
+    assert(state.gas_left < 0x7fffffffffffffff);
+
     // Use padded code.
     state.code = {analysis.padded_code.get(), state.code.size()};
 

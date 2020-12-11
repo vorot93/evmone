@@ -756,7 +756,7 @@ TEST_P(evm, undefined_instruction_block_cost_negative)
     // For undefined instructions EVMC instruction tables have cost -1.
     // If naively counted block costs can become negative.
 
-    const auto max_gas = std::numeric_limits<int64_t>::max();
+    const auto max_gas = std::numeric_limits<int64_t>::max() - 1;
 
     const auto code1 = bytecode{} + "0f";  // Block cost -1.
     execute(max_gas, code1);
