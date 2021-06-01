@@ -100,7 +100,7 @@ inline evmc_status_code check_requirements(
         if (metrics.can_overflow_stack)
             return EVMC_STACK_OVERFLOW;
     }
-    else if (stack_size < metrics.stack_height_required)
+    else if (INTX_UNLIKELY(stack_size < metrics.stack_height_required))
         return EVMC_STACK_UNDERFLOW;
 
     return EVMC_SUCCESS;
