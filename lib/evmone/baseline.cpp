@@ -91,7 +91,7 @@ inline evmc_status_code check_requirements(
     const auto metrics = instruction_table[op];
 
     const auto gas_cost = int64_t{metrics.gas_cost} & 0x7fffffffffffffff;
-    if ((state.gas_left -= gas_cost) < 0)
+    if (INTX_UNLIKELY((state.gas_left -= gas_cost) < 0))
         return gas_cost == 0x7fffffffffffffff ? EVMC_UNDEFINED_INSTRUCTION : EVMC_OUT_OF_GAS;
 
     const auto stack_size = state.stack.size();
