@@ -97,7 +97,7 @@ inline evmc_status_code check_requirements(
     const auto stack_size = state.stack.size();
     if (INTX_UNLIKELY(stack_size == Stack::limit))
     {
-        if (metrics.stack_height_change > 0)
+        if (metrics.can_overflow_stack)
             return EVMC_STACK_OVERFLOW;
     }
     else if (stack_size < metrics.stack_height_required)
