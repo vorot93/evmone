@@ -95,12 +95,7 @@ inline evmc_status_code check_requirements(
         return gas_cost == 0x7fffffffffffffff ? EVMC_UNDEFINED_INSTRUCTION : EVMC_OUT_OF_GAS;
 
     const auto stack_size = state.stack.size();
-    if (INTX_UNLIKELY(stack_size == Stack::limit))
-    {
-        if (metrics.can_overflow_stack)
-            return EVMC_STACK_OVERFLOW;
-    }
-    else if (INTX_UNLIKELY(stack_size < metrics.stack_height_required))
+    if (INTX_UNLIKELY(stack_size < metrics.stack_height_required))
         return EVMC_STACK_UNDERFLOW;
 
     return EVMC_SUCCESS;
@@ -286,9 +281,20 @@ inline evmc_status_code wrap(evmc_status_code (*f)(ExecutionState&), ExecutionSt
 #define INVALID_impl invalid
 #define SELFDESTRUCT_impl selfdestruct
 
+#define CHECK_STACK_OVERFLOW(INSTR)                                  \
+    if constexpr (instr::traits[OP_##INSTR].stack_height_change > 0) \
+    {                                                                \
+        if (state.stack.size() == Stack::limit)                      \
+        {                                                            \
+            state.status = EVMC_STACK_OVERFLOW;                      \
+            goto exit;                                               \
+        }                                                            \
+    }
+
 #define CASE(INSTR)                                         \
     case OP_##INSTR:                                        \
     {                                                       \
+        CHECK_STACK_OVERFLOW(INSTR)                         \
         const auto status_code = wrap(INSTR##_impl, state); \
         if (status_code != EVMC_SUCCESS)                    \
         {                                                   \
@@ -301,6 +307,7 @@ inline evmc_status_code wrap(evmc_status_code (*f)(ExecutionState&), ExecutionSt
 #define CASE_PUSH(N)                      \
     case OP_PUSH##N:                      \
     {                                     \
+        CHECK_STACK_OVERFLOW(PUSH##N)     \
         pc = load_push<N>(state, pc + 1); \
         continue;                         \
     }
@@ -405,9 +412,11 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             CASE(MSTORE8)
 
         case OP_JUMP:
+            CHECK_STACK_OVERFLOW(JUMP)
             pc = op_jump(state, analysis.jumpdest_map);
             continue;
         case OP_JUMPI:
+            CHECK_STACK_OVERFLOW(JUMPI)
             if (state.stack[1] != 0)
             {
                 pc = op_jump(state, analysis.jumpdest_map);
@@ -421,12 +430,14 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             continue;
 
         case OP_PC:
+            CHECK_STACK_OVERFLOW(PC)
             state.stack.push(pc - code);
             break;
             CASE(MSIZE)
             CASE(SLOAD)
             CASE(SSTORE)
         case OP_GAS:
+            CHECK_STACK_OVERFLOW(PC)
             state.stack.push(state.gas_left);
             break;
         case OP_JUMPDEST:
