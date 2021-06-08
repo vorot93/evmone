@@ -94,10 +94,6 @@ inline evmc_status_code check_requirements(
     if (INTX_UNLIKELY((state.gas_left -= gas_cost) < 0))
         return gas_cost == 0x7fffffffffffffff ? EVMC_UNDEFINED_INSTRUCTION : EVMC_OUT_OF_GAS;
 
-    const auto stack_size = state.stack.size();
-    if (INTX_UNLIKELY(stack_size < metrics.stack_height_required))
-        return EVMC_STACK_UNDERFLOW;
-
     return EVMC_SUCCESS;
 }
 
@@ -284,17 +280,31 @@ inline evmc_status_code wrap(evmc_status_code (*f)(ExecutionState&), ExecutionSt
 #define CHECK_STACK_OVERFLOW(INSTR)                                  \
     if constexpr (instr::traits[OP_##INSTR].stack_height_change > 0) \
     {                                                                \
-        if (state.stack.size() == Stack::limit)                      \
+        if (INTX_UNLIKELY(state.stack.size() == Stack::limit))       \
         {                                                            \
             state.status = EVMC_STACK_OVERFLOW;                      \
             goto exit;                                               \
         }                                                            \
     }
 
+#define CHECK_STACK_UNDERFLOW(INSTR)                                                             \
+    if constexpr (instr::traits[OP_##INSTR].stack_height_required > 0)                           \
+    {                                                                                            \
+        if (INTX_UNLIKELY(state.stack.size() < instr::traits[OP_##INSTR].stack_height_required)) \
+        {                                                                                        \
+            state.status = EVMC_STACK_UNDERFLOW;                                                 \
+            goto exit;                                                                           \
+        }                                                                                        \
+    }
+
+#define CHECK(INSTR)            \
+    CHECK_STACK_OVERFLOW(INSTR) \
+    CHECK_STACK_UNDERFLOW(INSTR)
+
 #define CASE(INSTR)                                         \
     case OP_##INSTR:                                        \
     {                                                       \
-        CHECK_STACK_OVERFLOW(INSTR)                         \
+        CHECK(INSTR)                                        \
         const auto status_code = wrap(INSTR##_impl, state); \
         if (status_code != EVMC_SUCCESS)                    \
         {                                                   \
@@ -307,7 +317,7 @@ inline evmc_status_code wrap(evmc_status_code (*f)(ExecutionState&), ExecutionSt
 #define CASE_PUSH(N)                      \
     case OP_PUSH##N:                      \
     {                                     \
-        CHECK_STACK_OVERFLOW(PUSH##N)     \
+        CHECK(PUSH##N)                    \
         pc = load_push<N>(state, pc + 1); \
         continue;                         \
     }
@@ -412,11 +422,11 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             CASE(MSTORE8)
 
         case OP_JUMP:
-            CHECK_STACK_OVERFLOW(JUMP)
+            CHECK(JUMP)
             pc = op_jump(state, analysis.jumpdest_map);
             continue;
         case OP_JUMPI:
-            CHECK_STACK_OVERFLOW(JUMPI)
+            CHECK(JUMPI)
             if (state.stack[1] != 0)
             {
                 pc = op_jump(state, analysis.jumpdest_map);
@@ -430,14 +440,14 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             continue;
 
         case OP_PC:
-            CHECK_STACK_OVERFLOW(PC)
+            CHECK(PC)
             state.stack.push(pc - code);
             break;
             CASE(MSIZE)
             CASE(SLOAD)
             CASE(SSTORE)
         case OP_GAS:
-            CHECK_STACK_OVERFLOW(PC)
+            CHECK(PC)
             state.stack.push(state.gas_left);
             break;
         case OP_JUMPDEST:
@@ -520,18 +530,21 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             CASE(CALL)
             CASE(CALLCODE)
         case OP_RETURN:
+            CHECK(RETURN)
             op_return<EVMC_SUCCESS>(state);
             goto exit;
             CASE(DELEGATECALL)
             CASE(STATICCALL)
             CASE(CREATE2)
         case OP_REVERT:
+            CHECK(REVERT)
             op_return<EVMC_REVERT>(state);
             goto exit;
         case OP_INVALID:
             state.status = EVMC_INVALID_INSTRUCTION;
             goto exit;
         case OP_SELFDESTRUCT:
+            CHECK(SELFDESTRUCT)
             state.status = selfdestruct(state);
             goto exit;
         default:
