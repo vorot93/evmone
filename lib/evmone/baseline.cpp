@@ -85,18 +85,6 @@ inline void op_return(ExecutionState& state) noexcept
     state.status = StatusCode;
 }
 
-inline evmc_status_code check_requirements(
-    const InstructionTable& instruction_table, ExecutionState& state, uint8_t op) noexcept
-{
-    const auto metrics = instruction_table[op];
-
-    const auto gas_cost = int64_t{metrics.gas_cost} & 0x7fffffffffffffff;
-    if (INTX_UNLIKELY((state.gas_left -= gas_cost) < 0))
-        return gas_cost == 0x7fffffffffffffff ? EVMC_UNDEFINED_INSTRUCTION : EVMC_OUT_OF_GAS;
-
-    return EVMC_SUCCESS;
-}
-
 template <size_t N>
 inline auto log_(ExecutionState& state)
 {
@@ -297,7 +285,20 @@ inline evmc_status_code wrap(evmc_status_code (*f)(ExecutionState&), ExecutionSt
         }                                                                                        \
     }
 
+#define CHECK_GAS(INSTR)                                                                         \
+    {                                                                                            \
+        const auto metrics = instruction_table[op];                                              \
+        const auto gas_cost = int64_t{metrics.gas_cost} & 0x7fffffffffffffff;                    \
+        if (INTX_UNLIKELY((state.gas_left -= gas_cost) < 0))                                     \
+        {                                                                                        \
+            state.status =                                                                       \
+                (gas_cost == 0x7fffffffffffffff) ? EVMC_UNDEFINED_INSTRUCTION : EVMC_OUT_OF_GAS; \
+            goto exit;                                                                           \
+        }                                                                                        \
+    }
+
 #define CHECK(INSTR)            \
+    CHECK_GAS(INSTR)            \
     CHECK_STACK_OVERFLOW(INSTR) \
     CHECK_STACK_UNDERFLOW(INSTR)
 
@@ -349,13 +350,6 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
         }
 
         const auto op = *pc;
-        const auto status = check_requirements(instruction_table, state, op);
-        if (status != EVMC_SUCCESS)
-        {
-            state.status = status;
-            goto exit;
-        }
-
         switch (op)
         {
         case OP_STOP:
@@ -451,6 +445,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             state.stack.push(state.gas_left);
             break;
         case OP_JUMPDEST:
+            CHECK(JUMPDEST)
             break;
 
             CASE_PUSH(1)
@@ -548,7 +543,8 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             state.status = selfdestruct(state);
             goto exit;
         default:
-            INTX_UNREACHABLE();
+            state.status = EVMC_UNDEFINED_INSTRUCTION;
+            goto exit;
         }
 
         ++pc;
