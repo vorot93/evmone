@@ -13,9 +13,14 @@
 #ifdef _MSC_VER
 #define CASE(OPCODE) case OP_##OPCODE:
 #else
-#define CASE(OPCODE)  \
-    case OP_##OPCODE: \
-        asm("#" #OPCODE);
+#define CASE(OPCODE)                                                                         \
+    case OP_##OPCODE:                                                                        \
+        asm("#" #OPCODE);                                                                    \
+        if constexpr (instr::gas_costs<evmc_revision(Rev)>[OP_##OPCODE] == instr::undefined) \
+        {                                                                                    \
+            state.status = EVMC_UNDEFINED_INSTRUCTION;                                       \
+            goto exit;                                                                       \
+        }
 #endif
 
 
@@ -98,9 +103,6 @@ inline evmc_status_code check_requirements(
     const InstructionTable& instruction_table, ExecutionState& state, uint8_t op) noexcept
 {
     const auto metrics = instruction_table[op];
-
-    if (INTX_UNLIKELY(metrics.gas_cost == instr::undefined))
-        return EVMC_UNDEFINED_INSTRUCTION;
 
     if (INTX_UNLIKELY((state.gas_left -= metrics.gas_cost) < 0))
         return EVMC_OUT_OF_GAS;
@@ -775,7 +777,8 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             state.status = selfdestruct(state);
             goto exit;
         default:
-            INTX_UNREACHABLE();
+            state.status = EVMC_UNDEFINED_INSTRUCTION;
+            goto exit;
         }
 
         ++pc;
@@ -798,7 +801,31 @@ exit:
 evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& analysis) noexcept
 {
     if (INTX_UNLIKELY(vm.get_tracer() != nullptr))
-        return execute<EVMC_MAX_REVISION, true>(vm, state, analysis);
+    {
+        switch (state.rev)
+        {
+        case EVMC_FRONTIER:
+            return execute<EVMC_FRONTIER, true>(vm, state, analysis);
+        case EVMC_HOMESTEAD:
+            return execute<EVMC_HOMESTEAD, true>(vm, state, analysis);
+        case EVMC_TANGERINE_WHISTLE:
+            return execute<EVMC_TANGERINE_WHISTLE, true>(vm, state, analysis);
+        case EVMC_SPURIOUS_DRAGON:
+            return execute<EVMC_SPURIOUS_DRAGON, true>(vm, state, analysis);
+        case EVMC_BYZANTIUM:
+            return execute<EVMC_BYZANTIUM, true>(vm, state, analysis);
+        case EVMC_CONSTANTINOPLE:
+            return execute<EVMC_CONSTANTINOPLE, true>(vm, state, analysis);
+        case EVMC_PETERSBURG:
+            return execute<EVMC_PETERSBURG, true>(vm, state, analysis);
+        case EVMC_ISTANBUL:
+            return execute<EVMC_ISTANBUL, true>(vm, state, analysis);
+        case EVMC_BERLIN:
+            return execute<EVMC_BERLIN, true>(vm, state, analysis);
+        default:
+            return execute<EVMC_LONDON, true>(vm, state, analysis);
+        }
+    }
 
     switch (state.rev)
     {
