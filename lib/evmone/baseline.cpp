@@ -117,7 +117,7 @@ inline evmc_status_code check_requirements(
     return EVMC_SUCCESS;
 }
 
-template <bool TracingEnabled>
+template <int Rev, bool TracingEnabled>
 evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& analysis) noexcept
 {
     // Use padded code.
@@ -798,9 +798,31 @@ exit:
 evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& analysis) noexcept
 {
     if (INTX_UNLIKELY(vm.get_tracer() != nullptr))
-        return execute<true>(vm, state, analysis);
+        return execute<EVMC_MAX_REVISION, true>(vm, state, analysis);
 
-    return execute<false>(vm, state, analysis);
+    switch (state.rev)
+    {
+    case EVMC_FRONTIER:
+        return execute<EVMC_FRONTIER, false>(vm, state, analysis);
+    case EVMC_HOMESTEAD:
+        return execute<EVMC_HOMESTEAD, false>(vm, state, analysis);
+    case EVMC_TANGERINE_WHISTLE:
+        return execute<EVMC_TANGERINE_WHISTLE, false>(vm, state, analysis);
+    case EVMC_SPURIOUS_DRAGON:
+        return execute<EVMC_SPURIOUS_DRAGON, false>(vm, state, analysis);
+    case EVMC_BYZANTIUM:
+        return execute<EVMC_BYZANTIUM, false>(vm, state, analysis);
+    case EVMC_CONSTANTINOPLE:
+        return execute<EVMC_CONSTANTINOPLE, false>(vm, state, analysis);
+    case EVMC_PETERSBURG:
+        return execute<EVMC_PETERSBURG, false>(vm, state, analysis);
+    case EVMC_ISTANBUL:
+        return execute<EVMC_ISTANBUL, false>(vm, state, analysis);
+    case EVMC_BERLIN:
+        return execute<EVMC_BERLIN, false>(vm, state, analysis);
+    default:
+        return execute<EVMC_LONDON, false>(vm, state, analysis);
+    }
 }
 
 evmc_result execute(evmc_vm* c_vm, const evmc_host_interface* host, evmc_host_context* ctx,
