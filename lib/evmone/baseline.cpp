@@ -91,6 +91,9 @@ inline evmc_status_code check_requirements(
     return EVMC_SUCCESS;
 }
 
+#define CONTINUE continue
+#define NEXT break
+
 template <bool TracingEnabled>
 evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& analysis) noexcept
 {
@@ -128,31 +131,31 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             goto exit;
         case OP_ADD:
             add(state.stack);
-            break;
+            NEXT;
         case OP_MUL:
             mul(state.stack);
-            break;
+            NEXT;
         case OP_SUB:
             sub(state.stack);
-            break;
+            NEXT;
         case OP_DIV:
             div(state.stack);
-            break;
+            NEXT;
         case OP_SDIV:
             sdiv(state.stack);
-            break;
+            NEXT;
         case OP_MOD:
             mod(state.stack);
-            break;
+            NEXT;
         case OP_SMOD:
             smod(state.stack);
-            break;
+            NEXT;
         case OP_ADDMOD:
             addmod(state.stack);
-            break;
+            NEXT;
         case OP_MULMOD:
             mulmod(state.stack);
-            break;
+            NEXT;
         case OP_EXP:
         {
             const auto status_code = exp(state);
@@ -161,54 +164,54 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 state.status = status_code;
                 goto exit;
             }
-            break;
+            NEXT;
         }
         case OP_SIGNEXTEND:
             signextend(state.stack);
-            break;
+            NEXT;
 
         case OP_LT:
             lt(state.stack);
-            break;
+            NEXT;
         case OP_GT:
             gt(state.stack);
-            break;
+            NEXT;
         case OP_SLT:
             slt(state.stack);
-            break;
+            NEXT;
         case OP_SGT:
             sgt(state.stack);
-            break;
+            NEXT;
         case OP_EQ:
             eq(state.stack);
-            break;
+            NEXT;
         case OP_ISZERO:
             iszero(state.stack);
-            break;
+            NEXT;
         case OP_AND:
             and_(state.stack);
-            break;
+            NEXT;
         case OP_OR:
             or_(state.stack);
-            break;
+            NEXT;
         case OP_XOR:
             xor_(state.stack);
-            break;
+            NEXT;
         case OP_NOT:
             not_(state.stack);
-            break;
+            NEXT;
         case OP_BYTE:
             byte(state.stack);
-            break;
+            NEXT;
         case OP_SHL:
             shl(state.stack);
-            break;
+            NEXT;
         case OP_SHR:
             shr(state.stack);
-            break;
+            NEXT;
         case OP_SAR:
             sar(state.stack);
-            break;
+            NEXT;
 
         case OP_KECCAK256:
         {
@@ -218,12 +221,12 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 state.status = status_code;
                 goto exit;
             }
-            break;
+            NEXT;
         }
 
         case OP_ADDRESS:
             address(state);
-            break;
+            NEXT;
         case OP_BALANCE:
         {
             const auto status_code = balance(state);
@@ -232,23 +235,23 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 state.status = status_code;
                 goto exit;
             }
-            break;
+            NEXT;
         }
         case OP_ORIGIN:
             origin(state);
-            break;
+            NEXT;
         case OP_CALLER:
             caller(state);
-            break;
+            NEXT;
         case OP_CALLVALUE:
             callvalue(state);
-            break;
+            NEXT;
         case OP_CALLDATALOAD:
             calldataload(state);
-            break;
+            NEXT;
         case OP_CALLDATASIZE:
             calldatasize(state);
-            break;
+            NEXT;
         case OP_CALLDATACOPY:
         {
             const auto status_code = calldatacopy(state);
@@ -257,11 +260,11 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 state.status = status_code;
                 goto exit;
             }
-            break;
+            NEXT;
         }
         case OP_CODESIZE:
             codesize(state);
-            break;
+            NEXT;
         case OP_CODECOPY:
         {
             const auto status_code = codecopy(state);
@@ -270,11 +273,11 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 state.status = status_code;
                 goto exit;
             }
-            break;
+            NEXT;
         }
         case OP_GASPRICE:
             gasprice(state);
-            break;
+            NEXT;
         case OP_EXTCODESIZE:
         {
             const auto status_code = extcodesize(state);
@@ -283,7 +286,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 state.status = status_code;
                 goto exit;
             }
-            break;
+            NEXT;
         }
         case OP_EXTCODECOPY:
         {
@@ -293,11 +296,11 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 state.status = status_code;
                 goto exit;
             }
-            break;
+            NEXT;
         }
         case OP_RETURNDATASIZE:
             returndatasize(state);
-            break;
+            NEXT;
         case OP_RETURNDATACOPY:
         {
             const auto status_code = returndatacopy(state);
@@ -306,7 +309,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 state.status = status_code;
                 goto exit;
             }
-            break;
+            NEXT;
         }
         case OP_EXTCODEHASH:
         {
@@ -316,39 +319,39 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 state.status = status_code;
                 goto exit;
             }
-            break;
+            NEXT;
         }
         case OP_BLOCKHASH:
             blockhash(state);
-            break;
+            NEXT;
         case OP_COINBASE:
             coinbase(state);
-            break;
+            NEXT;
         case OP_TIMESTAMP:
             timestamp(state);
-            break;
+            NEXT;
         case OP_NUMBER:
             number(state);
-            break;
+            NEXT;
         case OP_DIFFICULTY:
             difficulty(state);
-            break;
+            NEXT;
         case OP_GASLIMIT:
             gaslimit(state);
-            break;
+            NEXT;
         case OP_CHAINID:
             chainid(state);
-            break;
+            NEXT;
         case OP_SELFBALANCE:
             selfbalance(state);
-            break;
+            NEXT;
         case OP_BASEFEE:
             basefee(state);
-            break;
+            NEXT;
 
         case OP_POP:
             pop(state.stack);
-            break;
+            NEXT;
         case OP_MLOAD:
         {
             const auto status_code = mload(state);
@@ -357,7 +360,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 state.status = status_code;
                 goto exit;
             }
-            break;
+            NEXT;
         }
         case OP_MSTORE:
         {
@@ -367,7 +370,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 state.status = status_code;
                 goto exit;
             }
-            break;
+            NEXT;
         }
         case OP_MSTORE8:
         {
@@ -377,12 +380,12 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 state.status = status_code;
                 goto exit;
             }
-            break;
+            NEXT;
         }
 
         case OP_JUMP:
             pc = op_jump(state, analysis.jumpdest_map);
-            continue;
+            CONTINUE;
         case OP_JUMPI:
             if (state.stack[1] != 0)
             {
@@ -394,14 +397,14 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 ++pc;
             }
             state.stack.pop();
-            continue;
+            CONTINUE;
 
         case OP_PC:
             state.stack.push(pc - code);
-            break;
+            NEXT;
         case OP_MSIZE:
             msize(state);
-            break;
+            NEXT;
         case OP_SLOAD:
         {
             const auto status_code = sload(state);
@@ -410,7 +413,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 state.status = status_code;
                 goto exit;
             }
-            break;
+            NEXT;
         }
         case OP_SSTORE:
         {
@@ -420,208 +423,208 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 state.status = status_code;
                 goto exit;
             }
-            break;
+            NEXT;
         }
         case OP_GAS:
             state.stack.push(state.gas_left);
-            break;
+            NEXT;
         case OP_JUMPDEST:
-            break;
+            NEXT;
 
         case OP_PUSH1:
             pc = load_push<1>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH2:
             pc = load_push<2>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH3:
             pc = load_push<3>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH4:
             pc = load_push<4>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH5:
             pc = load_push<5>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH6:
             pc = load_push<6>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH7:
             pc = load_push<7>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH8:
             pc = load_push<8>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH9:
             pc = load_push<9>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH10:
             pc = load_push<10>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH11:
             pc = load_push<11>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH12:
             pc = load_push<12>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH13:
             pc = load_push<13>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH14:
             pc = load_push<14>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH15:
             pc = load_push<15>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH16:
             pc = load_push<16>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH17:
             pc = load_push<17>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH18:
             pc = load_push<18>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH19:
             pc = load_push<19>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH20:
             pc = load_push<20>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH21:
             pc = load_push<21>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH22:
             pc = load_push<22>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH23:
             pc = load_push<23>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH24:
             pc = load_push<24>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH25:
             pc = load_push<25>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH26:
             pc = load_push<26>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH27:
             pc = load_push<27>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH28:
             pc = load_push<28>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH29:
             pc = load_push<29>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH30:
             pc = load_push<30>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH31:
             pc = load_push<31>(state, pc + 1);
-            continue;
+            CONTINUE;
         case OP_PUSH32:
             pc = load_push<32>(state, pc + 1);
-            continue;
+            CONTINUE;
 
         case OP_DUP1:
             dup<1>(state.stack);
-            break;
+            NEXT;
         case OP_DUP2:
             dup<2>(state.stack);
-            break;
+            NEXT;
         case OP_DUP3:
             dup<3>(state.stack);
-            break;
+            NEXT;
         case OP_DUP4:
             dup<4>(state.stack);
-            break;
+            NEXT;
         case OP_DUP5:
             dup<5>(state.stack);
-            break;
+            NEXT;
         case OP_DUP6:
             dup<6>(state.stack);
-            break;
+            NEXT;
         case OP_DUP7:
             dup<7>(state.stack);
-            break;
+            NEXT;
         case OP_DUP8:
             dup<8>(state.stack);
-            break;
+            NEXT;
         case OP_DUP9:
             dup<9>(state.stack);
-            break;
+            NEXT;
         case OP_DUP10:
             dup<10>(state.stack);
-            break;
+            NEXT;
         case OP_DUP11:
             dup<11>(state.stack);
-            break;
+            NEXT;
         case OP_DUP12:
             dup<12>(state.stack);
-            break;
+            NEXT;
         case OP_DUP13:
             dup<13>(state.stack);
-            break;
+            NEXT;
         case OP_DUP14:
             dup<14>(state.stack);
-            break;
+            NEXT;
         case OP_DUP15:
             dup<15>(state.stack);
-            break;
+            NEXT;
         case OP_DUP16:
             dup<16>(state.stack);
-            break;
+            NEXT;
 
         case OP_SWAP1:
             swap<1>(state.stack);
-            break;
+            NEXT;
         case OP_SWAP2:
             swap<2>(state.stack);
-            break;
+            NEXT;
         case OP_SWAP3:
             swap<3>(state.stack);
-            break;
+            NEXT;
         case OP_SWAP4:
             swap<4>(state.stack);
-            break;
+            NEXT;
         case OP_SWAP5:
             swap<5>(state.stack);
-            break;
+            NEXT;
         case OP_SWAP6:
             swap<6>(state.stack);
-            break;
+            NEXT;
         case OP_SWAP7:
             swap<7>(state.stack);
-            break;
+            NEXT;
         case OP_SWAP8:
             swap<8>(state.stack);
-            break;
+            NEXT;
         case OP_SWAP9:
             swap<9>(state.stack);
-            break;
+            NEXT;
         case OP_SWAP10:
             swap<10>(state.stack);
-            break;
+            NEXT;
         case OP_SWAP11:
             swap<11>(state.stack);
-            break;
+            NEXT;
         case OP_SWAP12:
             swap<12>(state.stack);
-            break;
+            NEXT;
         case OP_SWAP13:
             swap<13>(state.stack);
-            break;
+            NEXT;
         case OP_SWAP14:
             swap<14>(state.stack);
-            break;
+            NEXT;
         case OP_SWAP15:
             swap<15>(state.stack);
-            break;
+            NEXT;
         case OP_SWAP16:
             swap<16>(state.stack);
-            break;
+            NEXT;
 
         case OP_LOG0:
         {
@@ -631,7 +634,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 state.status = status_code;
                 goto exit;
             }
-            break;
+            NEXT;
         }
         case OP_LOG1:
         {
@@ -641,7 +644,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 state.status = status_code;
                 goto exit;
             }
-            break;
+            NEXT;
         }
         case OP_LOG2:
         {
@@ -651,7 +654,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 state.status = status_code;
                 goto exit;
             }
-            break;
+            NEXT;
         }
         case OP_LOG3:
         {
@@ -661,7 +664,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 state.status = status_code;
                 goto exit;
             }
-            break;
+            NEXT;
         }
         case OP_LOG4:
         {
@@ -671,7 +674,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 state.status = status_code;
                 goto exit;
             }
-            break;
+            NEXT;
         }
 
         case OP_CREATE:
@@ -682,7 +685,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 state.status = status_code;
                 goto exit;
             }
-            break;
+            NEXT;
         }
         case OP_CALL:
         {
@@ -692,7 +695,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 state.status = status_code;
                 goto exit;
             }
-            break;
+            NEXT;
         }
         case OP_CALLCODE:
         {
@@ -702,7 +705,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 state.status = status_code;
                 goto exit;
             }
-            break;
+            NEXT;
         }
         case OP_RETURN:
             return_<EVMC_SUCCESS>(state);
@@ -715,7 +718,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 state.status = status_code;
                 goto exit;
             }
-            break;
+            NEXT;
         }
         case OP_STATICCALL:
         {
@@ -725,7 +728,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 state.status = status_code;
                 goto exit;
             }
-            break;
+            NEXT;
         }
         case OP_CREATE2:
         {
@@ -735,7 +738,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 state.status = status_code;
                 goto exit;
             }
-            break;
+            NEXT;
         }
         case OP_REVERT:
             return_<EVMC_REVERT>(state);
