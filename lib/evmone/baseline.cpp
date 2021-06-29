@@ -91,8 +91,10 @@ inline evmc_status_code check_requirements(
     return EVMC_SUCCESS;
 }
 
-#define CONTINUE continue
-#define NEXT break
+#define CONTINUE break
+#define NEXT \
+    ++pc;    \
+    CONTINUE
 
 template <bool TracingEnabled>
 evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& analysis) noexcept
@@ -752,8 +754,6 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
         default:
             INTX_UNREACHABLE();
         }
-
-        ++pc;
     }
 
 exit:
