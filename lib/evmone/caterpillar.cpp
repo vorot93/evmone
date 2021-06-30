@@ -170,6 +170,39 @@ evmc_status_code cat_instr(ExecutionState& state, size_t pc) noexcept
     // else
     //     std::cerr << Op << std::endl;
 
+    static constexpr auto tr = instr::traits[Op];
+
+    if constexpr (const auto since = instr::is_defined_since(Op); since != EVMC_FRONTIER)
+    {
+        if (INTX_UNLIKELY(state.rev < since))
+            return EVMC_UNDEFINED_INSTRUCTION;
+    }
+
+    if constexpr (tr.stack_height_required > 0)
+    {
+        if (INTX_UNLIKELY(state.stack.size() < tr.stack_height_required))
+            return EVMC_STACK_UNDERFLOW;
+    }
+
+    if constexpr (tr.stack_height_change > 0)
+    {
+        if (INTX_UNLIKELY(state.stack.size() == Stack::limit))
+            return EVMC_STACK_OVERFLOW;
+    }
+
+    if constexpr (instr::has_const_gas_cost(Op))
+    {
+        if (INTX_UNLIKELY((state.gas_left -= instr::gas_costs[EVMC_FRONTIER][Op]) < 0))
+            return EVMC_OUT_OF_GAS;
+    }
+    else
+    {
+        if (INTX_UNLIKELY((state.gas_left -= instr::gas_costs[state.rev][Op]) < 0))
+            return EVMC_OUT_OF_GAS;
+    }
+
+
+
     if constexpr (Op >= OP_PUSH1 && Op <= OP_PUSH32)
     {
         load_push<Op - OP_PUSH1 + 1>(state, state.code.data() + pc + 1);
