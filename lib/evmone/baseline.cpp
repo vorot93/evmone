@@ -72,10 +72,18 @@ template <evmc_opcode Op>
 inline evmc_status_code check_requirements(
     const InstructionTable& instruction_table, ExecutionState& state) noexcept
 {
+    static constexpr auto tr = instr::traits[Op];
+
     if constexpr (const auto since = instr::is_defined_since(Op); since != EVMC_FRONTIER)
     {
         if (INTX_UNLIKELY(state.rev < since))
             return EVMC_UNDEFINED_INSTRUCTION;
+    }
+
+    if constexpr (tr.stack_height_required > 0)
+    {
+        if (INTX_UNLIKELY(state.stack.size() < tr.stack_height_required))
+            return EVMC_STACK_UNDERFLOW;
     }
 
     const auto metrics = instruction_table[Op];
@@ -89,8 +97,6 @@ inline evmc_status_code check_requirements(
         if (metrics.can_overflow_stack)
             return EVMC_STACK_OVERFLOW;
     }
-    else if (INTX_UNLIKELY(stack_size < metrics.stack_height_required))
-        return EVMC_STACK_UNDERFLOW;
 
     return EVMC_SUCCESS;
 }
