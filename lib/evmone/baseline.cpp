@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "baseline.hpp"
-#include "baseline_instruction_table.hpp"
 #include "execution_state.hpp"
 #include "instructions.hpp"
 #include "vm.hpp"
@@ -69,8 +68,7 @@ inline const uint8_t* load_push(ExecutionState& state, const uint8_t* code) noex
 }
 
 template <evmc_opcode Op>
-inline evmc_status_code check_requirements(
-    const InstructionTable& instruction_table, ExecutionState& state) noexcept
+inline evmc_status_code check_requirements(ExecutionState& state) noexcept
 {
     static constexpr auto tr = instr::traits[Op];
 
@@ -92,8 +90,7 @@ inline evmc_status_code check_requirements(
             return EVMC_STACK_OVERFLOW;
     }
 
-    const auto metrics = instruction_table[Op];
-    if (INTX_UNLIKELY((state.gas_left -= metrics.gas_cost) < 0))
+    if (INTX_UNLIKELY((state.gas_left -= instr::gas_costs[state.rev][Op]) < 0))
         return EVMC_OUT_OF_GAS;
 
     return EVMC_SUCCESS;
@@ -107,13 +104,12 @@ inline evmc_status_code check_requirements(
     ++pc;    \
     CONTINUE
 
-#define IMPL(OPCODE)                                                                   \
-    if (const auto status = check_requirements<OP_##OPCODE>(instruction_table, state); \
-        status != EVMC_SUCCESS)                                                        \
-    {                                                                                  \
-        state.status = status;                                                         \
-        goto exit;                                                                     \
-    }                                                                                  \
+#define IMPL(OPCODE)                                                                        \
+    if (const auto status = check_requirements<OP_##OPCODE>(state); status != EVMC_SUCCESS) \
+    {                                                                                       \
+        state.status = status;                                                              \
+        goto exit;                                                                          \
+    }                                                                                       \
     (void)0
 
 #pragma GCC diagnostic ignored "-Wunused-label"
@@ -127,8 +123,6 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
     auto* tracer = vm.get_tracer();
     if constexpr (TracingEnabled)
         tracer->notify_execution_start(state.rev, *state.msg, state.code);
-
-    const auto& instruction_table = get_baseline_instruction_table(state.rev);
 
     const auto* const code = state.code.data();
     auto pc = code;
