@@ -68,6 +68,14 @@ inline const uint8_t* load_push(ExecutionState& state, const uint8_t* code) noex
     return code + Len;
 }
 
+template <>
+inline const uint8_t* load_push<1>(ExecutionState& state, const uint8_t* code) noexcept
+{
+    const auto data = *code;
+    state.stack.push(data);
+    return code + 1;
+}
+
 inline evmc_status_code check_requirements(
     const InstructionTable& instruction_table, ExecutionState& state, uint8_t op) noexcept
 {
