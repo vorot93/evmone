@@ -126,19 +126,66 @@ void load_push(ExecutionState& state, const uint8_t* code) noexcept
 
 constexpr auto instr_impls = []() noexcept {
     std::array<InstrImpl, 256> table{};
+    table[OP_ADD] = add;
+    table[OP_MUL] = mul;
+    table[OP_SUB] = sub;
+    table[OP_GT] = gt;
+    table[OP_LT] = lt;
+    table[OP_SHL] = shl;
+    table[OP_SHR] = shr;
+    table[OP_AND] = and_;
+    table[OP_XOR] = xor_;
+    table[OP_OR] = or_;
+    table[OP_NOT] = not_;
+    table[OP_MSTORE] = mstore;
+    table[OP_MLOAD] = mload;
+    table[OP_DUP1] = dup<1>;
+    table[OP_DUP2] = dup<2>;
+    table[OP_DUP3] = dup<3>;
+    table[OP_DUP4] = dup<4>;
+    table[OP_DUP5] = dup<5>;
+    table[OP_DUP6] = dup<6>;
+    table[OP_DUP7] = dup<7>;
+    table[OP_DUP8] = dup<8>;
+    table[OP_DUP9] = dup<9>;
+    table[OP_DUP10] = dup<10>;
+    table[OP_DUP11] = dup<11>;
+    table[OP_DUP12] = dup<12>;
+    table[OP_SWAP1] = swap<1>;
+    table[OP_SWAP2] = swap<2>;
+    table[OP_SWAP3] = swap<3>;
+    table[OP_POP] = pop;
     table[OP_CALLDATALOAD] = calldataload;
+    table[OP_CALLDATACOPY] = calldatacopy;
+    table[OP_CALLDATASIZE] = calldatasize;
     return table;
 }();
 
 template <evmc_opcode Op>
 evmc_status_code cat_instr(ExecutionState& state, size_t pc) noexcept
 {
-    std::cerr << instr::traits[Op].name << std::endl;
+    // constexpr auto name = instr::traits[Op].name;
+    // if constexpr (name != nullptr)
+    //     std::cerr << name << std::endl;
+    // else
+    //     std::cerr << Op << std::endl;
 
     if constexpr (Op >= OP_PUSH1 && Op <= OP_PUSH32)
     {
         load_push<Op - OP_PUSH1 + 1>(state, state.code.data() + pc + 1);
         pc += Op - OP_PUSH1 + 1;
+    }
+    else if constexpr (Op == OP_JUMPI)
+    {
+        if (state.stack[1] != 0)
+            pc = static_cast<size_t>(state.stack.pop()) - 1;
+        else
+            state.stack.pop();
+        state.stack.pop();
+    }
+    else if constexpr (Op == OP_JUMP)
+    {
+        pc = static_cast<size_t>(state.stack.pop()) - 1;
     }
     else if constexpr (instr_impls[Op] != nullptr)
     {
@@ -146,6 +193,8 @@ evmc_status_code cat_instr(ExecutionState& state, size_t pc) noexcept
         if (status != EVMC_SUCCESS)
             return status;
     }
+    else if constexpr (Op == OP_JUMPDEST)
+    {}
     else
         return EVMC_UNDEFINED_INSTRUCTION;
 
