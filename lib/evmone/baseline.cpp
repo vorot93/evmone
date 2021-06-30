@@ -72,10 +72,13 @@ template <evmc_opcode Op>
 inline evmc_status_code check_requirements(
     const InstructionTable& instruction_table, ExecutionState& state) noexcept
 {
-    const auto metrics = instruction_table[Op];
+    if constexpr (const auto since = instr::is_defined_since(Op); since != EVMC_FRONTIER)
+    {
+        if (INTX_UNLIKELY(state.rev < since))
+            return EVMC_UNDEFINED_INSTRUCTION;
+    }
 
-    if (INTX_UNLIKELY(metrics.gas_cost == instr::undefined))
-        return EVMC_UNDEFINED_INSTRUCTION;
+    const auto metrics = instruction_table[Op];
 
     if (INTX_UNLIKELY((state.gas_left -= metrics.gas_cost) < 0))
         return EVMC_OUT_OF_GAS;
