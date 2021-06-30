@@ -99,7 +99,14 @@ inline evmc_status_code check_requirements(
     ++pc;    \
     CONTINUE
 
-#define IMPL(OPCODE) (void)0
+#define IMPL(OPCODE)                                                          \
+    if (const auto status = check_requirements(instruction_table, state, op); \
+        status != EVMC_SUCCESS)                                               \
+    {                                                                         \
+        state.status = status;                                                \
+        goto exit;                                                            \
+    }                                                                         \
+    (void)0
 
 #pragma GCC diagnostic ignored "-Wunused-label"
 
@@ -127,13 +134,6 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
         }
 
         const auto op = *pc;
-        const auto status = check_requirements(instruction_table, state, op);
-        if (status != EVMC_SUCCESS)
-        {
-            state.status = status;
-            goto exit;
-        }
-
         switch (op)
         {
         case TARGET(STOP):
@@ -902,7 +902,8 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             state.status = selfdestruct(state);
             goto exit;
         default:
-            INTX_UNREACHABLE();
+            state.status = EVMC_UNDEFINED_INSTRUCTION;
+            goto exit;
         }
     }
 
