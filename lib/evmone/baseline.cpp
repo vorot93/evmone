@@ -91,10 +91,15 @@ inline evmc_status_code check_requirements(
     return EVMC_SUCCESS;
 }
 
+#define TARGET(OPCODE)                  \
+    OP_##OPCODE : asm("# OP_" #OPCODE); \
+    TARGET_##OPCODE
 #define CONTINUE break
 #define NEXT \
     ++pc;    \
     CONTINUE
+
+#pragma GCC diagnostic ignored "-Wunused-label"
 
 template <bool TracingEnabled>
 evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& analysis) noexcept
@@ -129,36 +134,36 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
 
         switch (op)
         {
-        case OP_STOP:
+        case TARGET(STOP):
             goto exit;
-        case OP_ADD:
+        case TARGET(ADD):
             add(state);
             NEXT;
-        case OP_MUL:
+        case TARGET(MUL):
             mul(state);
             NEXT;
-        case OP_SUB:
+        case TARGET(SUB):
             sub(state);
             NEXT;
-        case OP_DIV:
+        case TARGET(DIV):
             div(state);
             NEXT;
-        case OP_SDIV:
+        case TARGET(SDIV):
             sdiv(state);
             NEXT;
-        case OP_MOD:
+        case TARGET(MOD):
             mod(state);
             NEXT;
-        case OP_SMOD:
+        case TARGET(SMOD):
             smod(state);
             NEXT;
-        case OP_ADDMOD:
+        case TARGET(ADDMOD):
             addmod(state);
             NEXT;
-        case OP_MULMOD:
+        case TARGET(MULMOD):
             mulmod(state);
             NEXT;
-        case OP_EXP:
+        case TARGET(EXP):
         {
             const auto status_code = exp(state);
             if (status_code != EVMC_SUCCESS)
@@ -168,54 +173,54 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             }
             NEXT;
         }
-        case OP_SIGNEXTEND:
+        case TARGET(SIGNEXTEND):
             signextend(state);
             NEXT;
 
-        case OP_LT:
+        case TARGET(LT):
             lt(state);
             NEXT;
-        case OP_GT:
+        case TARGET(GT):
             gt(state);
             NEXT;
-        case OP_SLT:
+        case TARGET(SLT):
             slt(state);
             NEXT;
-        case OP_SGT:
+        case TARGET(SGT):
             sgt(state);
             NEXT;
-        case OP_EQ:
+        case TARGET(EQ):
             eq(state);
             NEXT;
-        case OP_ISZERO:
+        case TARGET(ISZERO):
             iszero(state);
             NEXT;
-        case OP_AND:
+        case TARGET(AND):
             and_(state);
             NEXT;
-        case OP_OR:
+        case TARGET(OR):
             or_(state);
             NEXT;
-        case OP_XOR:
+        case TARGET(XOR):
             xor_(state);
             NEXT;
-        case OP_NOT:
+        case TARGET(NOT):
             not_(state);
             NEXT;
-        case OP_BYTE:
+        case TARGET(BYTE):
             byte(state);
             NEXT;
-        case OP_SHL:
+        case TARGET(SHL):
             shl(state);
             NEXT;
-        case OP_SHR:
+        case TARGET(SHR):
             shr(state);
             NEXT;
-        case OP_SAR:
+        case TARGET(SAR):
             sar(state);
             NEXT;
 
-        case OP_KECCAK256:
+        case TARGET(KECCAK256):
         {
             const auto status_code = keccak256(state);
             if (status_code != EVMC_SUCCESS)
@@ -226,10 +231,10 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             NEXT;
         }
 
-        case OP_ADDRESS:
+        case TARGET(ADDRESS):
             address(state);
             NEXT;
-        case OP_BALANCE:
+        case TARGET(BALANCE):
         {
             const auto status_code = balance(state);
             if (status_code != EVMC_SUCCESS)
@@ -239,22 +244,22 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             }
             NEXT;
         }
-        case OP_ORIGIN:
+        case TARGET(ORIGIN):
             origin(state);
             NEXT;
-        case OP_CALLER:
+        case TARGET(CALLER):
             caller(state);
             NEXT;
-        case OP_CALLVALUE:
+        case TARGET(CALLVALUE):
             callvalue(state);
             NEXT;
-        case OP_CALLDATALOAD:
+        case TARGET(CALLDATALOAD):
             calldataload(state);
             NEXT;
-        case OP_CALLDATASIZE:
+        case TARGET(CALLDATASIZE):
             calldatasize(state);
             NEXT;
-        case OP_CALLDATACOPY:
+        case TARGET(CALLDATACOPY):
         {
             const auto status_code = calldatacopy(state);
             if (status_code != EVMC_SUCCESS)
@@ -264,10 +269,10 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             }
             NEXT;
         }
-        case OP_CODESIZE:
+        case TARGET(CODESIZE):
             codesize(state);
             NEXT;
-        case OP_CODECOPY:
+        case TARGET(CODECOPY):
         {
             const auto status_code = codecopy(state);
             if (status_code != EVMC_SUCCESS)
@@ -277,10 +282,10 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             }
             NEXT;
         }
-        case OP_GASPRICE:
+        case TARGET(GASPRICE):
             gasprice(state);
             NEXT;
-        case OP_EXTCODESIZE:
+        case TARGET(EXTCODESIZE):
         {
             const auto status_code = extcodesize(state);
             if (status_code != EVMC_SUCCESS)
@@ -290,7 +295,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             }
             NEXT;
         }
-        case OP_EXTCODECOPY:
+        case TARGET(EXTCODECOPY):
         {
             const auto status_code = extcodecopy(state);
             if (status_code != EVMC_SUCCESS)
@@ -300,10 +305,10 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             }
             NEXT;
         }
-        case OP_RETURNDATASIZE:
+        case TARGET(RETURNDATASIZE):
             returndatasize(state);
             NEXT;
-        case OP_RETURNDATACOPY:
+        case TARGET(RETURNDATACOPY):
         {
             const auto status_code = returndatacopy(state);
             if (status_code != EVMC_SUCCESS)
@@ -313,7 +318,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             }
             NEXT;
         }
-        case OP_EXTCODEHASH:
+        case TARGET(EXTCODEHASH):
         {
             const auto status_code = extcodehash(state);
             if (status_code != EVMC_SUCCESS)
@@ -323,38 +328,38 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             }
             NEXT;
         }
-        case OP_BLOCKHASH:
+        case TARGET(BLOCKHASH):
             blockhash(state);
             NEXT;
-        case OP_COINBASE:
+        case TARGET(COINBASE):
             coinbase(state);
             NEXT;
-        case OP_TIMESTAMP:
+        case TARGET(TIMESTAMP):
             timestamp(state);
             NEXT;
-        case OP_NUMBER:
+        case TARGET(NUMBER):
             number(state);
             NEXT;
-        case OP_DIFFICULTY:
+        case TARGET(DIFFICULTY):
             difficulty(state);
             NEXT;
-        case OP_GASLIMIT:
+        case TARGET(GASLIMIT):
             gaslimit(state);
             NEXT;
-        case OP_CHAINID:
+        case TARGET(CHAINID):
             chainid(state);
             NEXT;
-        case OP_SELFBALANCE:
+        case TARGET(SELFBALANCE):
             selfbalance(state);
             NEXT;
-        case OP_BASEFEE:
+        case TARGET(BASEFEE):
             basefee(state);
             NEXT;
 
-        case OP_POP:
+        case TARGET(POP):
             pop(state);
             NEXT;
-        case OP_MLOAD:
+        case TARGET(MLOAD):
         {
             const auto status_code = mload(state);
             if (status_code != EVMC_SUCCESS)
@@ -364,7 +369,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             }
             NEXT;
         }
-        case OP_MSTORE:
+        case TARGET(MSTORE):
         {
             const auto status_code = mstore(state);
             if (status_code != EVMC_SUCCESS)
@@ -374,7 +379,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             }
             NEXT;
         }
-        case OP_MSTORE8:
+        case TARGET(MSTORE8):
         {
             const auto status_code = mstore8(state);
             if (status_code != EVMC_SUCCESS)
@@ -385,10 +390,10 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             NEXT;
         }
 
-        case OP_JUMP:
+        case TARGET(JUMP):
             pc = op_jump(state, analysis.jumpdest_map);
             CONTINUE;
-        case OP_JUMPI:
+        case TARGET(JUMPI):
             if (state.stack[1] != 0)
             {
                 pc = op_jump(state, analysis.jumpdest_map);
@@ -401,13 +406,13 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             state.stack.pop();
             CONTINUE;
 
-        case OP_PC:
+        case TARGET(PC):
             state.stack.push(pc - code);
             NEXT;
-        case OP_MSIZE:
+        case TARGET(MSIZE):
             msize(state);
             NEXT;
-        case OP_SLOAD:
+        case TARGET(SLOAD):
         {
             const auto status_code = sload(state);
             if (status_code != EVMC_SUCCESS)
@@ -417,7 +422,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             }
             NEXT;
         }
-        case OP_SSTORE:
+        case TARGET(SSTORE):
         {
             const auto status_code = sstore(state);
             if (status_code != EVMC_SUCCESS)
@@ -427,208 +432,208 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             }
             NEXT;
         }
-        case OP_GAS:
+        case TARGET(GAS):
             state.stack.push(state.gas_left);
             NEXT;
-        case OP_JUMPDEST:
+        case TARGET(JUMPDEST):
             NEXT;
 
-        case OP_PUSH1:
+        case TARGET(PUSH1):
             pc = load_push<1>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH2:
+        case TARGET(PUSH2):
             pc = load_push<2>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH3:
+        case TARGET(PUSH3):
             pc = load_push<3>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH4:
+        case TARGET(PUSH4):
             pc = load_push<4>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH5:
+        case TARGET(PUSH5):
             pc = load_push<5>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH6:
+        case TARGET(PUSH6):
             pc = load_push<6>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH7:
+        case TARGET(PUSH7):
             pc = load_push<7>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH8:
+        case TARGET(PUSH8):
             pc = load_push<8>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH9:
+        case TARGET(PUSH9):
             pc = load_push<9>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH10:
+        case TARGET(PUSH10):
             pc = load_push<10>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH11:
+        case TARGET(PUSH11):
             pc = load_push<11>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH12:
+        case TARGET(PUSH12):
             pc = load_push<12>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH13:
+        case TARGET(PUSH13):
             pc = load_push<13>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH14:
+        case TARGET(PUSH14):
             pc = load_push<14>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH15:
+        case TARGET(PUSH15):
             pc = load_push<15>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH16:
+        case TARGET(PUSH16):
             pc = load_push<16>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH17:
+        case TARGET(PUSH17):
             pc = load_push<17>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH18:
+        case TARGET(PUSH18):
             pc = load_push<18>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH19:
+        case TARGET(PUSH19):
             pc = load_push<19>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH20:
+        case TARGET(PUSH20):
             pc = load_push<20>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH21:
+        case TARGET(PUSH21):
             pc = load_push<21>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH22:
+        case TARGET(PUSH22):
             pc = load_push<22>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH23:
+        case TARGET(PUSH23):
             pc = load_push<23>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH24:
+        case TARGET(PUSH24):
             pc = load_push<24>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH25:
+        case TARGET(PUSH25):
             pc = load_push<25>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH26:
+        case TARGET(PUSH26):
             pc = load_push<26>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH27:
+        case TARGET(PUSH27):
             pc = load_push<27>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH28:
+        case TARGET(PUSH28):
             pc = load_push<28>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH29:
+        case TARGET(PUSH29):
             pc = load_push<29>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH30:
+        case TARGET(PUSH30):
             pc = load_push<30>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH31:
+        case TARGET(PUSH31):
             pc = load_push<31>(state, pc + 1);
             CONTINUE;
-        case OP_PUSH32:
+        case TARGET(PUSH32):
             pc = load_push<32>(state, pc + 1);
             CONTINUE;
 
-        case OP_DUP1:
+        case TARGET(DUP1):
             dup<1>(state);
             NEXT;
-        case OP_DUP2:
+        case TARGET(DUP2):
             dup<2>(state);
             NEXT;
-        case OP_DUP3:
+        case TARGET(DUP3):
             dup<3>(state);
             NEXT;
-        case OP_DUP4:
+        case TARGET(DUP4):
             dup<4>(state);
             NEXT;
-        case OP_DUP5:
+        case TARGET(DUP5):
             dup<5>(state);
             NEXT;
-        case OP_DUP6:
+        case TARGET(DUP6):
             dup<6>(state);
             NEXT;
-        case OP_DUP7:
+        case TARGET(DUP7):
             dup<7>(state);
             NEXT;
-        case OP_DUP8:
+        case TARGET(DUP8):
             dup<8>(state);
             NEXT;
-        case OP_DUP9:
+        case TARGET(DUP9):
             dup<9>(state);
             NEXT;
-        case OP_DUP10:
+        case TARGET(DUP10):
             dup<10>(state);
             NEXT;
-        case OP_DUP11:
+        case TARGET(DUP11):
             dup<11>(state);
             NEXT;
-        case OP_DUP12:
+        case TARGET(DUP12):
             dup<12>(state);
             NEXT;
-        case OP_DUP13:
+        case TARGET(DUP13):
             dup<13>(state);
             NEXT;
-        case OP_DUP14:
+        case TARGET(DUP14):
             dup<14>(state);
             NEXT;
-        case OP_DUP15:
+        case TARGET(DUP15):
             dup<15>(state);
             NEXT;
-        case OP_DUP16:
+        case TARGET(DUP16):
             dup<16>(state);
             NEXT;
 
-        case OP_SWAP1:
+        case TARGET(SWAP1):
             swap<1>(state);
             NEXT;
-        case OP_SWAP2:
+        case TARGET(SWAP2):
             swap<2>(state);
             NEXT;
-        case OP_SWAP3:
+        case TARGET(SWAP3):
             swap<3>(state);
             NEXT;
-        case OP_SWAP4:
+        case TARGET(SWAP4):
             swap<4>(state);
             NEXT;
-        case OP_SWAP5:
+        case TARGET(SWAP5):
             swap<5>(state);
             NEXT;
-        case OP_SWAP6:
+        case TARGET(SWAP6):
             swap<6>(state);
             NEXT;
-        case OP_SWAP7:
+        case TARGET(SWAP7):
             swap<7>(state);
             NEXT;
-        case OP_SWAP8:
+        case TARGET(SWAP8):
             swap<8>(state);
             NEXT;
-        case OP_SWAP9:
+        case TARGET(SWAP9):
             swap<9>(state);
             NEXT;
-        case OP_SWAP10:
+        case TARGET(SWAP10):
             swap<10>(state);
             NEXT;
-        case OP_SWAP11:
+        case TARGET(SWAP11):
             swap<11>(state);
             NEXT;
-        case OP_SWAP12:
+        case TARGET(SWAP12):
             swap<12>(state);
             NEXT;
-        case OP_SWAP13:
+        case TARGET(SWAP13):
             swap<13>(state);
             NEXT;
-        case OP_SWAP14:
+        case TARGET(SWAP14):
             swap<14>(state);
             NEXT;
-        case OP_SWAP15:
+        case TARGET(SWAP15):
             swap<15>(state);
             NEXT;
-        case OP_SWAP16:
+        case TARGET(SWAP16):
             swap<16>(state);
             NEXT;
 
-        case OP_LOG0:
+        case TARGET(LOG0):
         {
             const auto status_code = log<0>(state);
             if (status_code != EVMC_SUCCESS)
@@ -638,7 +643,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             }
             NEXT;
         }
-        case OP_LOG1:
+        case TARGET(LOG1):
         {
             const auto status_code = log<1>(state);
             if (status_code != EVMC_SUCCESS)
@@ -648,7 +653,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             }
             NEXT;
         }
-        case OP_LOG2:
+        case TARGET(LOG2):
         {
             const auto status_code = log<2>(state);
             if (status_code != EVMC_SUCCESS)
@@ -658,7 +663,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             }
             NEXT;
         }
-        case OP_LOG3:
+        case TARGET(LOG3):
         {
             const auto status_code = log<3>(state);
             if (status_code != EVMC_SUCCESS)
@@ -668,7 +673,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             }
             NEXT;
         }
-        case OP_LOG4:
+        case TARGET(LOG4):
         {
             const auto status_code = log<4>(state);
             if (status_code != EVMC_SUCCESS)
@@ -679,7 +684,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             NEXT;
         }
 
-        case OP_CREATE:
+        case TARGET(CREATE):
         {
             const auto status_code = create<EVMC_CREATE>(state);
             if (status_code != EVMC_SUCCESS)
@@ -689,7 +694,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             }
             NEXT;
         }
-        case OP_CALL:
+        case TARGET(CALL):
         {
             const auto status_code = call<EVMC_CALL>(state);
             if (status_code != EVMC_SUCCESS)
@@ -699,7 +704,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             }
             NEXT;
         }
-        case OP_CALLCODE:
+        case TARGET(CALLCODE):
         {
             const auto status_code = call<EVMC_CALLCODE>(state);
             if (status_code != EVMC_SUCCESS)
@@ -709,10 +714,10 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             }
             NEXT;
         }
-        case OP_RETURN:
+        case TARGET(RETURN):
             return_<EVMC_SUCCESS>(state);
             goto exit;
-        case OP_DELEGATECALL:
+        case TARGET(DELEGATECALL):
         {
             const auto status_code = call<EVMC_DELEGATECALL>(state);
             if (status_code != EVMC_SUCCESS)
@@ -722,7 +727,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             }
             NEXT;
         }
-        case OP_STATICCALL:
+        case TARGET(STATICCALL):
         {
             const auto status_code = call<EVMC_CALL, true>(state);
             if (status_code != EVMC_SUCCESS)
@@ -732,7 +737,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             }
             NEXT;
         }
-        case OP_CREATE2:
+        case TARGET(CREATE2):
         {
             const auto status_code = create<EVMC_CREATE2>(state);
             if (status_code != EVMC_SUCCESS)
@@ -742,13 +747,13 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             }
             NEXT;
         }
-        case OP_REVERT:
+        case TARGET(REVERT):
             return_<EVMC_REVERT>(state);
             goto exit;
-        case OP_INVALID:
+        case TARGET(INVALID):
             state.status = EVMC_INVALID_INSTRUCTION;
             goto exit;
-        case OP_SELFDESTRUCT:
+        case TARGET(SELFDESTRUCT):
             state.status = selfdestruct(state);
             goto exit;
         default:
