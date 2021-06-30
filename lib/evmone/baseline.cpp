@@ -86,17 +86,15 @@ inline evmc_status_code check_requirements(
             return EVMC_STACK_UNDERFLOW;
     }
 
-    const auto metrics = instruction_table[Op];
-
-    if (INTX_UNLIKELY((state.gas_left -= metrics.gas_cost) < 0))
-        return EVMC_OUT_OF_GAS;
-
-    const auto stack_size = state.stack.size();
-    if (INTX_UNLIKELY(stack_size == Stack::limit))
+    if constexpr (tr.stack_height_change > 0)
     {
-        if (metrics.can_overflow_stack)
+        if (INTX_UNLIKELY(state.stack.size() == Stack::limit))
             return EVMC_STACK_OVERFLOW;
     }
+
+    const auto metrics = instruction_table[Op];
+    if (INTX_UNLIKELY((state.gas_left -= metrics.gas_cost) < 0))
+        return EVMC_OUT_OF_GAS;
 
     return EVMC_SUCCESS;
 }
