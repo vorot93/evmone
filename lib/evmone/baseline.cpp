@@ -99,6 +99,8 @@ inline evmc_status_code check_requirements(
     ++pc;    \
     CONTINUE
 
+#define IMPL(OPCODE) (void)0
+
 #pragma GCC diagnostic ignored "-Wunused-label"
 
 template <bool TracingEnabled>
@@ -135,265 +137,323 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
         switch (op)
         {
         case TARGET(STOP):
+            IMPL(STOP);
             goto exit;
         case TARGET(ADD):
+            IMPL(ADD);
             add(state);
             NEXT;
         case TARGET(MUL):
+            IMPL(MUL);
             mul(state);
             NEXT;
         case TARGET(SUB):
+            IMPL(SUB);
             sub(state);
             NEXT;
         case TARGET(DIV):
+            IMPL(DIV);
             div(state);
             NEXT;
         case TARGET(SDIV):
+            IMPL(SDIV);
             sdiv(state);
             NEXT;
         case TARGET(MOD):
+            IMPL(MOD);
             mod(state);
             NEXT;
         case TARGET(SMOD):
+            IMPL(SMOD);
             smod(state);
             NEXT;
         case TARGET(ADDMOD):
+            IMPL(ADDMOD);
             addmod(state);
             NEXT;
         case TARGET(MULMOD):
+            IMPL(MULMOD);
             mulmod(state);
             NEXT;
         case TARGET(EXP):
-        {
-            const auto status_code = exp(state);
-            if (status_code != EVMC_SUCCESS)
+            IMPL(EXP);
             {
-                state.status = status_code;
-                goto exit;
+                const auto status_code = exp(state);
+                if (status_code != EVMC_SUCCESS)
+                {
+                    state.status = status_code;
+                    goto exit;
+                }
+                NEXT;
             }
-            NEXT;
-        }
         case TARGET(SIGNEXTEND):
+            IMPL(SIGNEXTEND);
             signextend(state);
             NEXT;
 
         case TARGET(LT):
+            IMPL(LT);
             lt(state);
             NEXT;
         case TARGET(GT):
+            IMPL(GT);
             gt(state);
             NEXT;
         case TARGET(SLT):
+            IMPL(SLT);
             slt(state);
             NEXT;
         case TARGET(SGT):
+            IMPL(SGT);
             sgt(state);
             NEXT;
         case TARGET(EQ):
+            IMPL(EQ);
             eq(state);
             NEXT;
         case TARGET(ISZERO):
+            IMPL(ISZERO);
             iszero(state);
             NEXT;
         case TARGET(AND):
+            IMPL(AND);
             and_(state);
             NEXT;
         case TARGET(OR):
+            IMPL(OR);
             or_(state);
             NEXT;
         case TARGET(XOR):
+            IMPL(XOR);
             xor_(state);
             NEXT;
         case TARGET(NOT):
+            IMPL(NOT);
             not_(state);
             NEXT;
         case TARGET(BYTE):
+            IMPL(BYTE);
             byte(state);
             NEXT;
         case TARGET(SHL):
+            IMPL(SHL);
             shl(state);
             NEXT;
         case TARGET(SHR):
+            IMPL(SHR);
             shr(state);
             NEXT;
         case TARGET(SAR):
+            IMPL(SAR);
             sar(state);
             NEXT;
 
         case TARGET(KECCAK256):
-        {
-            const auto status_code = keccak256(state);
-            if (status_code != EVMC_SUCCESS)
+            IMPL(KECCAK256);
             {
-                state.status = status_code;
-                goto exit;
+                const auto status_code = keccak256(state);
+                if (status_code != EVMC_SUCCESS)
+                {
+                    state.status = status_code;
+                    goto exit;
+                }
+                NEXT;
             }
-            NEXT;
-        }
 
         case TARGET(ADDRESS):
+            IMPL(ADDRESS);
             address(state);
             NEXT;
         case TARGET(BALANCE):
-        {
-            const auto status_code = balance(state);
-            if (status_code != EVMC_SUCCESS)
+            IMPL(BALANCE);
             {
-                state.status = status_code;
-                goto exit;
+                const auto status_code = balance(state);
+                if (status_code != EVMC_SUCCESS)
+                {
+                    state.status = status_code;
+                    goto exit;
+                }
+                NEXT;
             }
-            NEXT;
-        }
         case TARGET(ORIGIN):
+            IMPL(ORIGIN);
             origin(state);
             NEXT;
         case TARGET(CALLER):
+            IMPL(CALLER);
             caller(state);
             NEXT;
         case TARGET(CALLVALUE):
+            IMPL(CALLVALUE);
             callvalue(state);
             NEXT;
         case TARGET(CALLDATALOAD):
+            IMPL(CALLDATALOAD);
             calldataload(state);
             NEXT;
         case TARGET(CALLDATASIZE):
+            IMPL(CALLDATASIZE);
             calldatasize(state);
             NEXT;
         case TARGET(CALLDATACOPY):
-        {
-            const auto status_code = calldatacopy(state);
-            if (status_code != EVMC_SUCCESS)
+            IMPL(CALLDATACOPY);
             {
-                state.status = status_code;
-                goto exit;
+                const auto status_code = calldatacopy(state);
+                if (status_code != EVMC_SUCCESS)
+                {
+                    state.status = status_code;
+                    goto exit;
+                }
+                NEXT;
             }
-            NEXT;
-        }
         case TARGET(CODESIZE):
+            IMPL(CODESIZE);
             codesize(state);
             NEXT;
         case TARGET(CODECOPY):
-        {
-            const auto status_code = codecopy(state);
-            if (status_code != EVMC_SUCCESS)
+            IMPL(CODECOPY);
             {
-                state.status = status_code;
-                goto exit;
+                const auto status_code = codecopy(state);
+                if (status_code != EVMC_SUCCESS)
+                {
+                    state.status = status_code;
+                    goto exit;
+                }
+                NEXT;
             }
-            NEXT;
-        }
         case TARGET(GASPRICE):
+            IMPL(GASPRICE);
             gasprice(state);
             NEXT;
         case TARGET(EXTCODESIZE):
-        {
-            const auto status_code = extcodesize(state);
-            if (status_code != EVMC_SUCCESS)
+            IMPL(EXTCODESIZE);
             {
-                state.status = status_code;
-                goto exit;
+                const auto status_code = extcodesize(state);
+                if (status_code != EVMC_SUCCESS)
+                {
+                    state.status = status_code;
+                    goto exit;
+                }
+                NEXT;
             }
-            NEXT;
-        }
         case TARGET(EXTCODECOPY):
-        {
-            const auto status_code = extcodecopy(state);
-            if (status_code != EVMC_SUCCESS)
+            IMPL(EXTCODECOPY);
             {
-                state.status = status_code;
-                goto exit;
+                const auto status_code = extcodecopy(state);
+                if (status_code != EVMC_SUCCESS)
+                {
+                    state.status = status_code;
+                    goto exit;
+                }
+                NEXT;
             }
-            NEXT;
-        }
         case TARGET(RETURNDATASIZE):
+            IMPL(RETURNDATASIZE);
             returndatasize(state);
             NEXT;
         case TARGET(RETURNDATACOPY):
-        {
-            const auto status_code = returndatacopy(state);
-            if (status_code != EVMC_SUCCESS)
+            IMPL(RETURNDATACOPY);
             {
-                state.status = status_code;
-                goto exit;
+                const auto status_code = returndatacopy(state);
+                if (status_code != EVMC_SUCCESS)
+                {
+                    state.status = status_code;
+                    goto exit;
+                }
+                NEXT;
             }
-            NEXT;
-        }
         case TARGET(EXTCODEHASH):
-        {
-            const auto status_code = extcodehash(state);
-            if (status_code != EVMC_SUCCESS)
+            IMPL(EXTCODEHASH);
             {
-                state.status = status_code;
-                goto exit;
+                const auto status_code = extcodehash(state);
+                if (status_code != EVMC_SUCCESS)
+                {
+                    state.status = status_code;
+                    goto exit;
+                }
+                NEXT;
             }
-            NEXT;
-        }
         case TARGET(BLOCKHASH):
+            IMPL(BLOCKHASH);
             blockhash(state);
             NEXT;
         case TARGET(COINBASE):
+            IMPL(COINBASE);
             coinbase(state);
             NEXT;
         case TARGET(TIMESTAMP):
+            IMPL(TIMESTAMP);
             timestamp(state);
             NEXT;
         case TARGET(NUMBER):
+            IMPL(NUMBER);
             number(state);
             NEXT;
         case TARGET(DIFFICULTY):
+            IMPL(DIFFICULTY);
             difficulty(state);
             NEXT;
         case TARGET(GASLIMIT):
+            IMPL(GASLIMIT);
             gaslimit(state);
             NEXT;
         case TARGET(CHAINID):
+            IMPL(CHAINID);
             chainid(state);
             NEXT;
         case TARGET(SELFBALANCE):
+            IMPL(SELFBALANCE);
             selfbalance(state);
             NEXT;
         case TARGET(BASEFEE):
+            IMPL(BASEFEE);
             basefee(state);
             NEXT;
 
         case TARGET(POP):
+            IMPL(POP);
             pop(state);
             NEXT;
         case TARGET(MLOAD):
-        {
-            const auto status_code = mload(state);
-            if (status_code != EVMC_SUCCESS)
+            IMPL(MLOAD);
             {
-                state.status = status_code;
-                goto exit;
+                const auto status_code = mload(state);
+                if (status_code != EVMC_SUCCESS)
+                {
+                    state.status = status_code;
+                    goto exit;
+                }
+                NEXT;
             }
-            NEXT;
-        }
         case TARGET(MSTORE):
-        {
-            const auto status_code = mstore(state);
-            if (status_code != EVMC_SUCCESS)
+            IMPL(MSTORE);
             {
-                state.status = status_code;
-                goto exit;
+                const auto status_code = mstore(state);
+                if (status_code != EVMC_SUCCESS)
+                {
+                    state.status = status_code;
+                    goto exit;
+                }
+                NEXT;
             }
-            NEXT;
-        }
         case TARGET(MSTORE8):
-        {
-            const auto status_code = mstore8(state);
-            if (status_code != EVMC_SUCCESS)
+            IMPL(MSTORE8);
             {
-                state.status = status_code;
-                goto exit;
+                const auto status_code = mstore8(state);
+                if (status_code != EVMC_SUCCESS)
+                {
+                    state.status = status_code;
+                    goto exit;
+                }
+                NEXT;
             }
-            NEXT;
-        }
 
         case TARGET(JUMP):
+            IMPL(JUMP);
             pc = op_jump(state, analysis.jumpdest_map);
             CONTINUE;
         case TARGET(JUMPI):
+            IMPL(JUMPI);
             if (state.stack[1] != 0)
             {
                 pc = op_jump(state, analysis.jumpdest_map);
@@ -407,353 +467,438 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             CONTINUE;
 
         case TARGET(PC):
+            IMPL(PC);
             state.stack.push(pc - code);
             NEXT;
         case TARGET(MSIZE):
+            IMPL(MSIZE);
             msize(state);
             NEXT;
         case TARGET(SLOAD):
-        {
-            const auto status_code = sload(state);
-            if (status_code != EVMC_SUCCESS)
+            IMPL(SLOAD);
             {
-                state.status = status_code;
-                goto exit;
+                const auto status_code = sload(state);
+                if (status_code != EVMC_SUCCESS)
+                {
+                    state.status = status_code;
+                    goto exit;
+                }
+                NEXT;
             }
-            NEXT;
-        }
         case TARGET(SSTORE):
-        {
-            const auto status_code = sstore(state);
-            if (status_code != EVMC_SUCCESS)
+            IMPL(SSTORE);
             {
-                state.status = status_code;
-                goto exit;
+                const auto status_code = sstore(state);
+                if (status_code != EVMC_SUCCESS)
+                {
+                    state.status = status_code;
+                    goto exit;
+                }
+                NEXT;
             }
-            NEXT;
-        }
         case TARGET(GAS):
+            IMPL(GAS);
             state.stack.push(state.gas_left);
             NEXT;
         case TARGET(JUMPDEST):
+            IMPL(JUMPDEST);
             NEXT;
 
         case TARGET(PUSH1):
+            IMPL(PUSH1);
             pc = load_push<1>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH2):
+            IMPL(PUSH2);
             pc = load_push<2>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH3):
+            IMPL(PUSH3);
             pc = load_push<3>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH4):
+            IMPL(PUSH4);
             pc = load_push<4>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH5):
+            IMPL(PUSH5);
             pc = load_push<5>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH6):
+            IMPL(PUSH6);
             pc = load_push<6>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH7):
+            IMPL(PUSH7);
             pc = load_push<7>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH8):
+            IMPL(PUSH8);
             pc = load_push<8>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH9):
+            IMPL(PUSH9);
             pc = load_push<9>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH10):
+            IMPL(PUSH10);
             pc = load_push<10>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH11):
+            IMPL(PUSH11);
             pc = load_push<11>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH12):
+            IMPL(PUSH12);
             pc = load_push<12>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH13):
+            IMPL(PUSH13);
             pc = load_push<13>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH14):
+            IMPL(PUSH14);
             pc = load_push<14>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH15):
+            IMPL(PUSH15);
             pc = load_push<15>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH16):
+            IMPL(PUSH16);
             pc = load_push<16>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH17):
+            IMPL(PUSH17);
             pc = load_push<17>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH18):
+            IMPL(PUSH18);
             pc = load_push<18>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH19):
+            IMPL(PUSH19);
             pc = load_push<19>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH20):
+            IMPL(PUSH20);
             pc = load_push<20>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH21):
+            IMPL(PUSH21);
             pc = load_push<21>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH22):
+            IMPL(PUSH22);
             pc = load_push<22>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH23):
+            IMPL(PUSH23);
             pc = load_push<23>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH24):
+            IMPL(PUSH24);
             pc = load_push<24>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH25):
+            IMPL(PUSH25);
             pc = load_push<25>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH26):
+            IMPL(PUSH26);
             pc = load_push<26>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH27):
+            IMPL(PUSH27);
             pc = load_push<27>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH28):
+            IMPL(PUSH28);
             pc = load_push<28>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH29):
+            IMPL(PUSH29);
             pc = load_push<29>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH30):
+            IMPL(PUSH30);
             pc = load_push<30>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH31):
+            IMPL(PUSH31);
             pc = load_push<31>(state, pc + 1);
             CONTINUE;
         case TARGET(PUSH32):
+            IMPL(PUSH32);
             pc = load_push<32>(state, pc + 1);
             CONTINUE;
 
         case TARGET(DUP1):
+            IMPL(DUP1);
             dup<1>(state);
             NEXT;
         case TARGET(DUP2):
+            IMPL(DUP2);
             dup<2>(state);
             NEXT;
         case TARGET(DUP3):
+            IMPL(DUP3);
             dup<3>(state);
             NEXT;
         case TARGET(DUP4):
+            IMPL(DUP4);
             dup<4>(state);
             NEXT;
         case TARGET(DUP5):
+            IMPL(DUP5);
             dup<5>(state);
             NEXT;
         case TARGET(DUP6):
+            IMPL(DUP6);
             dup<6>(state);
             NEXT;
         case TARGET(DUP7):
+            IMPL(DUP7);
             dup<7>(state);
             NEXT;
         case TARGET(DUP8):
+            IMPL(DUP8);
             dup<8>(state);
             NEXT;
         case TARGET(DUP9):
+            IMPL(DUP9);
             dup<9>(state);
             NEXT;
         case TARGET(DUP10):
+            IMPL(DUP10);
             dup<10>(state);
             NEXT;
         case TARGET(DUP11):
+            IMPL(DUP11);
             dup<11>(state);
             NEXT;
         case TARGET(DUP12):
+            IMPL(DUP12);
             dup<12>(state);
             NEXT;
         case TARGET(DUP13):
+            IMPL(DUP13);
             dup<13>(state);
             NEXT;
         case TARGET(DUP14):
+            IMPL(DUP14);
             dup<14>(state);
             NEXT;
         case TARGET(DUP15):
+            IMPL(DUP15);
             dup<15>(state);
             NEXT;
         case TARGET(DUP16):
+            IMPL(DUP16);
             dup<16>(state);
             NEXT;
 
         case TARGET(SWAP1):
+            IMPL(SWAP1);
             swap<1>(state);
             NEXT;
         case TARGET(SWAP2):
+            IMPL(SWAP2);
             swap<2>(state);
             NEXT;
         case TARGET(SWAP3):
+            IMPL(SWAP3);
             swap<3>(state);
             NEXT;
         case TARGET(SWAP4):
+            IMPL(SWAP4);
             swap<4>(state);
             NEXT;
         case TARGET(SWAP5):
+            IMPL(SWAP5);
             swap<5>(state);
             NEXT;
         case TARGET(SWAP6):
+            IMPL(SWAP6);
             swap<6>(state);
             NEXT;
         case TARGET(SWAP7):
+            IMPL(SWAP7);
             swap<7>(state);
             NEXT;
         case TARGET(SWAP8):
+            IMPL(SWAP8);
             swap<8>(state);
             NEXT;
         case TARGET(SWAP9):
+            IMPL(SWAP9);
             swap<9>(state);
             NEXT;
         case TARGET(SWAP10):
+            IMPL(SWAP10);
             swap<10>(state);
             NEXT;
         case TARGET(SWAP11):
+            IMPL(SWAP11);
             swap<11>(state);
             NEXT;
         case TARGET(SWAP12):
+            IMPL(SWAP12);
             swap<12>(state);
             NEXT;
         case TARGET(SWAP13):
+            IMPL(SWAP13);
             swap<13>(state);
             NEXT;
         case TARGET(SWAP14):
+            IMPL(SWAP14);
             swap<14>(state);
             NEXT;
         case TARGET(SWAP15):
+            IMPL(SWAP15);
             swap<15>(state);
             NEXT;
         case TARGET(SWAP16):
+            IMPL(SWAP16);
             swap<16>(state);
             NEXT;
 
         case TARGET(LOG0):
-        {
-            const auto status_code = log<0>(state);
-            if (status_code != EVMC_SUCCESS)
+            IMPL(LOG0);
             {
-                state.status = status_code;
-                goto exit;
+                const auto status_code = log<0>(state);
+                if (status_code != EVMC_SUCCESS)
+                {
+                    state.status = status_code;
+                    goto exit;
+                }
+                NEXT;
             }
-            NEXT;
-        }
         case TARGET(LOG1):
-        {
-            const auto status_code = log<1>(state);
-            if (status_code != EVMC_SUCCESS)
+            IMPL(LOG1);
             {
-                state.status = status_code;
-                goto exit;
+                const auto status_code = log<1>(state);
+                if (status_code != EVMC_SUCCESS)
+                {
+                    state.status = status_code;
+                    goto exit;
+                }
+                NEXT;
             }
-            NEXT;
-        }
         case TARGET(LOG2):
-        {
-            const auto status_code = log<2>(state);
-            if (status_code != EVMC_SUCCESS)
+            IMPL(LOG2);
             {
-                state.status = status_code;
-                goto exit;
+                const auto status_code = log<2>(state);
+                if (status_code != EVMC_SUCCESS)
+                {
+                    state.status = status_code;
+                    goto exit;
+                }
+                NEXT;
             }
-            NEXT;
-        }
         case TARGET(LOG3):
-        {
-            const auto status_code = log<3>(state);
-            if (status_code != EVMC_SUCCESS)
+            IMPL(LOG3);
             {
-                state.status = status_code;
-                goto exit;
+                const auto status_code = log<3>(state);
+                if (status_code != EVMC_SUCCESS)
+                {
+                    state.status = status_code;
+                    goto exit;
+                }
+                NEXT;
             }
-            NEXT;
-        }
         case TARGET(LOG4):
-        {
-            const auto status_code = log<4>(state);
-            if (status_code != EVMC_SUCCESS)
+            IMPL(LOG4);
             {
-                state.status = status_code;
-                goto exit;
+                const auto status_code = log<4>(state);
+                if (status_code != EVMC_SUCCESS)
+                {
+                    state.status = status_code;
+                    goto exit;
+                }
+                NEXT;
             }
-            NEXT;
-        }
 
         case TARGET(CREATE):
-        {
-            const auto status_code = create<EVMC_CREATE>(state);
-            if (status_code != EVMC_SUCCESS)
+            IMPL(CREATE);
             {
-                state.status = status_code;
-                goto exit;
+                const auto status_code = create<EVMC_CREATE>(state);
+                if (status_code != EVMC_SUCCESS)
+                {
+                    state.status = status_code;
+                    goto exit;
+                }
+                NEXT;
             }
-            NEXT;
-        }
         case TARGET(CALL):
-        {
-            const auto status_code = call<EVMC_CALL>(state);
-            if (status_code != EVMC_SUCCESS)
+            IMPL(CALL);
             {
-                state.status = status_code;
-                goto exit;
+                const auto status_code = call<EVMC_CALL>(state);
+                if (status_code != EVMC_SUCCESS)
+                {
+                    state.status = status_code;
+                    goto exit;
+                }
+                NEXT;
             }
-            NEXT;
-        }
         case TARGET(CALLCODE):
-        {
-            const auto status_code = call<EVMC_CALLCODE>(state);
-            if (status_code != EVMC_SUCCESS)
+            IMPL(CALLCODE);
             {
-                state.status = status_code;
-                goto exit;
+                const auto status_code = call<EVMC_CALLCODE>(state);
+                if (status_code != EVMC_SUCCESS)
+                {
+                    state.status = status_code;
+                    goto exit;
+                }
+                NEXT;
             }
-            NEXT;
-        }
         case TARGET(RETURN):
+            IMPL(RETURN);
             return_<EVMC_SUCCESS>(state);
             goto exit;
         case TARGET(DELEGATECALL):
-        {
-            const auto status_code = call<EVMC_DELEGATECALL>(state);
-            if (status_code != EVMC_SUCCESS)
+            IMPL(DELEGATECALL);
             {
-                state.status = status_code;
-                goto exit;
+                const auto status_code = call<EVMC_DELEGATECALL>(state);
+                if (status_code != EVMC_SUCCESS)
+                {
+                    state.status = status_code;
+                    goto exit;
+                }
+                NEXT;
             }
-            NEXT;
-        }
         case TARGET(STATICCALL):
-        {
-            const auto status_code = call<EVMC_CALL, true>(state);
-            if (status_code != EVMC_SUCCESS)
+            IMPL(STATICCALL);
             {
-                state.status = status_code;
-                goto exit;
+                const auto status_code = call<EVMC_CALL, true>(state);
+                if (status_code != EVMC_SUCCESS)
+                {
+                    state.status = status_code;
+                    goto exit;
+                }
+                NEXT;
             }
-            NEXT;
-        }
         case TARGET(CREATE2):
-        {
-            const auto status_code = create<EVMC_CREATE2>(state);
-            if (status_code != EVMC_SUCCESS)
+            IMPL(CREATE2);
             {
-                state.status = status_code;
-                goto exit;
+                const auto status_code = create<EVMC_CREATE2>(state);
+                if (status_code != EVMC_SUCCESS)
+                {
+                    state.status = status_code;
+                    goto exit;
+                }
+                NEXT;
             }
-            NEXT;
-        }
         case TARGET(REVERT):
+            IMPL(REVERT);
             return_<EVMC_REVERT>(state);
             goto exit;
         case TARGET(INVALID):
+            IMPL(INVALID);
             state.status = EVMC_INVALID_INSTRUCTION;
             goto exit;
         case TARGET(SELFDESTRUCT):
+            IMPL(SELFDESTRUCT);
             state.status = selfdestruct(state);
             goto exit;
         default:
