@@ -178,6 +178,16 @@ struct Traits
     int8_t stack_height_change = 0;
 };
 
+inline constexpr evmc_revision is_defined_since(evmc_opcode op) noexcept
+{
+    for (size_t r = EVMC_FRONTIER; r <= EVMC_MAX_REVISION; ++r)
+    {
+        if (gas_costs[r][op] != undefined)
+            return static_cast<evmc_revision>(r);
+    }
+    __builtin_trap();
+}
+
 /// The global, EVM revision independent, table of traits of all known EVM instructions.
 constexpr inline std::array<Traits, 256> traits = []() noexcept {
     std::array<Traits, 256> table{};
