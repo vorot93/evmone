@@ -68,10 +68,11 @@ inline const uint8_t* load_push(ExecutionState& state, const uint8_t* code) noex
     return code + Len;
 }
 
+template <evmc_opcode Op>
 inline evmc_status_code check_requirements(
-    const InstructionTable& instruction_table, ExecutionState& state, uint8_t op) noexcept
+    const InstructionTable& instruction_table, ExecutionState& state) noexcept
 {
-    const auto metrics = instruction_table[op];
+    const auto metrics = instruction_table[Op];
 
     if (INTX_UNLIKELY(metrics.gas_cost == instr::undefined))
         return EVMC_UNDEFINED_INSTRUCTION;
@@ -99,13 +100,13 @@ inline evmc_status_code check_requirements(
     ++pc;    \
     CONTINUE
 
-#define IMPL(OPCODE)                                                          \
-    if (const auto status = check_requirements(instruction_table, state, op); \
-        status != EVMC_SUCCESS)                                               \
-    {                                                                         \
-        state.status = status;                                                \
-        goto exit;                                                            \
-    }                                                                         \
+#define IMPL(OPCODE)                                                                   \
+    if (const auto status = check_requirements<OP_##OPCODE>(instruction_table, state); \
+        status != EVMC_SUCCESS)                                                        \
+    {                                                                                  \
+        state.status = status;                                                         \
+        goto exit;                                                                     \
+    }                                                                                  \
     (void)0
 
 #pragma GCC diagnostic ignored "-Wunused-label"
