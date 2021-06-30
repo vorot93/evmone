@@ -90,8 +90,16 @@ inline evmc_status_code check_requirements(ExecutionState& state) noexcept
             return EVMC_STACK_OVERFLOW;
     }
 
-    if (INTX_UNLIKELY((state.gas_left -= instr::gas_costs[state.rev][Op]) < 0))
-        return EVMC_OUT_OF_GAS;
+    if constexpr (instr::has_const_gas_cost(Op))
+    {
+        if (INTX_UNLIKELY((state.gas_left -= instr::gas_costs[EVMC_FRONTIER][Op]) < 0))
+            return EVMC_OUT_OF_GAS;
+    }
+    else
+    {
+        if (INTX_UNLIKELY((state.gas_left -= instr::gas_costs[state.rev][Op]) < 0))
+            return EVMC_OUT_OF_GAS;
+    }
 
     return EVMC_SUCCESS;
 }
