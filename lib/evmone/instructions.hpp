@@ -56,6 +56,8 @@ inline bool check_memory(ExecutionState& state, const uint256& offset, const uin
     return check_memory(state, offset, static_cast<uint64_t>(size));
 }
 
+using InstrImpl = evmc_status_code (*)(ExecutionState&) noexcept;
+
 inline evmc_status_code add(ExecutionState& state) noexcept
 {
     state.stack.top() += state.stack.pop();
@@ -822,4 +824,164 @@ inline evmc_status_code selfdestruct(ExecutionState& state) noexcept
     state.host.selfdestruct(state.msg->destination, beneficiary);
     return EVMC_SUCCESS;
 }
+
+constexpr std::array<InstrImpl, 256> impls = []() noexcept {
+    std::array<InstrImpl, 256> table{};
+
+    table[OP_STOP] = nullptr;
+    table[OP_ADD] = add;
+    table[OP_MUL] = mul;
+    table[OP_SUB] = sub;
+    table[OP_DIV] = div;
+    table[OP_SDIV] = sdiv;
+    table[OP_MOD] = mod;
+    table[OP_SMOD] = smod;
+    table[OP_ADDMOD] = addmod;
+    table[OP_MULMOD] = mulmod;
+    table[OP_EXP] = exp;
+    table[OP_SIGNEXTEND] = signextend;
+
+    table[OP_LT] = lt;
+    table[OP_GT] = gt;
+    table[OP_SLT] = slt;
+    table[OP_SGT] = sgt;
+    table[OP_EQ] = eq;
+    table[OP_ISZERO] = iszero;
+    table[OP_AND] = and_;
+    table[OP_OR] = or_;
+    table[OP_XOR] = xor_;
+    table[OP_NOT] = not_;
+    table[OP_BYTE] = byte;
+    table[OP_SHL] = shl;
+    table[OP_SHR] = shr;
+    table[OP_SAR] = sar;
+
+    table[OP_KECCAK256] = keccak256;
+
+    table[OP_ADDRESS] = address;
+    table[OP_BALANCE] = balance;
+    table[OP_ORIGIN] = origin;
+    table[OP_CALLER] = caller;
+    table[OP_CALLVALUE] = callvalue;
+    table[OP_CALLDATALOAD] = calldataload;
+    table[OP_CALLDATASIZE] = calldatasize;
+    table[OP_CALLDATACOPY] = calldatacopy;
+    table[OP_CODESIZE] = codesize;
+    table[OP_CODECOPY] = codecopy;
+    table[OP_GASPRICE] = gasprice;
+    table[OP_EXTCODESIZE] = extcodesize;
+    table[OP_EXTCODECOPY] = extcodecopy;
+    table[OP_RETURNDATASIZE] = returndatasize;
+    table[OP_RETURNDATACOPY] = returndatacopy;
+    table[OP_EXTCODEHASH] = extcodehash;
+
+    table[OP_BLOCKHASH] = blockhash;
+    table[OP_COINBASE] = coinbase;
+    table[OP_TIMESTAMP] = timestamp;
+    table[OP_NUMBER] = number;
+    table[OP_DIFFICULTY] = difficulty;
+    table[OP_GASLIMIT] = gaslimit;
+    table[OP_CHAINID] = chainid;
+    table[OP_SELFBALANCE] = selfbalance;
+    table[OP_BASEFEE] = basefee;
+
+    table[OP_POP] = pop;
+    table[OP_MLOAD] = mload;
+    table[OP_MSTORE] = mstore;
+    table[OP_MSTORE8] = mstore8;
+    table[OP_SLOAD] = sload;
+    table[OP_SSTORE] = sstore;
+    table[OP_JUMP] = nullptr;
+    table[OP_JUMPI] = nullptr;
+    table[OP_PC] = nullptr;
+    table[OP_MSIZE] = msize;
+    table[OP_GAS] = gas;
+    table[OP_JUMPDEST] = nullptr;
+
+    // table[OP_PUSH1] = push1;
+    // table[OP_PUSH2] = push2;
+    // table[OP_PUSH3] = push3;
+    // table[OP_PUSH4] = push4;
+    // table[OP_PUSH5] = push5;
+    // table[OP_PUSH6] = push6;
+    // table[OP_PUSH7] = push7;
+    // table[OP_PUSH8] = push8;
+    // table[OP_PUSH9] = push9;
+    // table[OP_PUSH10] = push10;
+    // table[OP_PUSH11] = push11;
+    // table[OP_PUSH12] = push12;
+    // table[OP_PUSH13] = push13;
+    // table[OP_PUSH14] = push14;
+    // table[OP_PUSH15] = push15;
+    // table[OP_PUSH16] = push16;
+    // table[OP_PUSH17] = push17;
+    // table[OP_PUSH18] = push18;
+    // table[OP_PUSH19] = push19;
+    // table[OP_PUSH20] = push20;
+    // table[OP_PUSH21] = push21;
+    // table[OP_PUSH22] = push22;
+    // table[OP_PUSH23] = push23;
+    // table[OP_PUSH24] = push24;
+    // table[OP_PUSH25] = push25;
+    // table[OP_PUSH26] = push26;
+    // table[OP_PUSH27] = push27;
+    // table[OP_PUSH28] = push28;
+    // table[OP_PUSH29] = push29;
+    // table[OP_PUSH30] = push30;
+    // table[OP_PUSH31] = push31;
+    // table[OP_PUSH32] = push32;
+
+    table[OP_DUP1] = dup<1>;
+    table[OP_DUP2] = dup<2>;
+    table[OP_DUP3] = dup<3>;
+    table[OP_DUP4] = dup<4>;
+    table[OP_DUP5] = dup<5>;
+    table[OP_DUP6] = dup<6>;
+    table[OP_DUP7] = dup<7>;
+    table[OP_DUP8] = dup<8>;
+    table[OP_DUP9] = dup<9>;
+    table[OP_DUP10] = dup<10>;
+    table[OP_DUP11] = dup<11>;
+    table[OP_DUP12] = dup<12>;
+    table[OP_DUP13] = dup<13>;
+    table[OP_DUP14] = dup<14>;
+    table[OP_DUP15] = dup<15>;
+    table[OP_DUP16] = dup<16>;
+
+    table[OP_SWAP1] = swap<1>;
+    table[OP_SWAP2] = swap<2>;
+    table[OP_SWAP3] = swap<3>;
+    table[OP_SWAP4] = swap<4>;
+    table[OP_SWAP5] = swap<5>;
+    table[OP_SWAP6] = swap<6>;
+    table[OP_SWAP7] = swap<7>;
+    table[OP_SWAP8] = swap<8>;
+    table[OP_SWAP9] = swap<9>;
+    table[OP_SWAP10] = swap<10>;
+    table[OP_SWAP11] = swap<11>;
+    table[OP_SWAP12] = swap<12>;
+    table[OP_SWAP13] = swap<13>;
+    table[OP_SWAP14] = swap<14>;
+    table[OP_SWAP15] = swap<15>;
+    table[OP_SWAP16] = swap<16>;
+
+    table[OP_LOG0] = log<0>;
+    table[OP_LOG1] = log<1>;
+    table[OP_LOG2] = log<2>;
+    table[OP_LOG3] = log<3>;
+    table[OP_LOG4] = log<4>;
+
+    table[OP_CREATE] = call<EVMC_CREATE>;
+    table[OP_CALL] = call<EVMC_CALL>;
+    table[OP_CALLCODE] = call<EVMC_CALLCODE>;
+    table[OP_RETURN] = nullptr;
+    table[OP_DELEGATECALL] = call<EVMC_DELEGATECALL>;
+    table[OP_CREATE2] = call<EVMC_CREATE2>;
+    table[OP_STATICCALL] = call<EVMC_CALL, true>;
+    table[OP_REVERT] = nullptr;
+    table[OP_INVALID] = nullptr;
+    table[OP_SELFDESTRUCT] = selfdestruct;
+
+    return table;
+}();
 }  // namespace evmone
