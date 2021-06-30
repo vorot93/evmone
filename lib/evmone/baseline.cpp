@@ -405,7 +405,11 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
 
     const auto* const code = state.code.data();
     auto pc = code;
-    while (true)  // Guaranteed to terminate because padded code ends with STOP.
+    // while (true)  // Guaranteed to terminate because padded code ends with STOP.
+
+
+
+
     {
         if constexpr (TracingEnabled)
         {
@@ -414,9 +418,14 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
                 tracer->notify_instruction_start(offset, state);
         }
 
-        const auto op = *pc;
-        switch (op)
+
+        // const auto op = *pc;
+        // switch (op)
         {
+            goto *cgoto_table[*pc];
+
+#define case
+
         case TARGET(STOP):
             IMPL(STOP);
             goto exit;
@@ -1182,7 +1191,7 @@ evmc_result execute(const VM& vm, ExecutionState& state, const CodeAnalysis& ana
             IMPL(SELFDESTRUCT);
             state.status = selfdestruct(state);
             goto exit;
-        default:
+        // default:
         TARGET_UNDEFINED:
             state.status = EVMC_UNDEFINED_INSTRUCTION;
             goto exit;
