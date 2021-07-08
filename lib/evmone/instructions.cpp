@@ -67,6 +67,11 @@ const instruction* op_jumpi(const instruction* instr, AdvancedExecutionState& st
     return instr;
 }
 
+const instruction* op_rjump(const instruction* instr, AdvancedExecutionState& state) noexcept
+{
+    return &state.analysis->instrs[static_cast<size_t>(instr->arg.number)];
+}
+
 const instruction* op_pc(const instruction* instr, AdvancedExecutionState& state) noexcept
 {
     state.stack.push(instr->arg.number);
@@ -243,7 +248,7 @@ constexpr std::array<instruction_exec_fn, 256> instruction_implementations = [](
     table[OP_MSIZE] = op<msize>;
     table[OP_GAS] = op_gas;
     table[OPX_BEGINBLOCK] = opx_beginblock;
-    table[OP_RJUMP] = op_invalid;
+    table[OP_RJUMP] = op_rjump;
     table[OP_RJUMPI] = op_invalid;
     table[OP_RJUMPTABLE] = op_invalid;
 

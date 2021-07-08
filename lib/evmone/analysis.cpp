@@ -152,6 +152,18 @@ AdvancedCodeAnalysis analyze(
         case OP_PC:
             instr.arg.number = code_pos - code - 1;
             break;
+
+        case OP_RJUMP:
+            // OP_RJUMP is guaranteed to be followed by 2-bytes immediate in EOF,
+            // but not in legacy code (but there it's undefined so argument value doesn't matter)
+            const auto offset_hi = (code_pos < code_end_pos ? *code_pos++ : 0);
+            const auto offset_lo = (code_pos < code_end_pos ? *code_pos++ : 0);
+            const auto offset = static_cast<int16_t>((offset_hi << 8) + offset_lo);
+
+            auto code_pos_post_rjump = code_pos - code + 2 + code_begin;
+            instr.arg.number = code_pos_post_rjump + offset; // PC_post_rjump + offset
+            is_terminator = true;
+            break;
         }
 
         // If this is a terminating instruction or the next instruction is a JUMPDEST.
